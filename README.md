@@ -1,3 +1,9 @@
+<video
+  src="https://github.com/user-attachments/assets/4fd6cd11-e56a-490d-ac1b-d9382d93453b"
+  width="640"
+  controls>
+</video>
+
 # Shader Effects
 
 Apply customizable GPU-powered shader effects to your GNOME desktop, including CRT scanlines, VHS distortion, RGB shifts, and more.
