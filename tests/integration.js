@@ -5,8 +5,13 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Scripting from 'resource:///org/gnome/shell/ui/scripting.js';
+import {PRESETS} from '../presets.js';
 
 export const METRICS = {};
+
+export function init() {
+    global.settings.set_strv('enabled-extensions', ['shader-effects@muratc.com']);
+}
 
 function assert(condition, message) {
     if (!condition)
@@ -60,9 +65,10 @@ export async function run() {
     await capture('desktop-original');
 
     settings.set_boolean('animate', false);
+    settings.set_boolean('monochrome', false);
     settings.set_double('intensity', 0.8);
     settings.set_boolean('enabled', true);
-    for (const preset of ['vhs', 'vhs-bw', 'ntsc', 'scanlines', 'crt', 'monochrome']) {
+    for (const {id: preset} of PRESETS) {
         settings.set_string('preset', preset);
         if (preset.startsWith('vhs'))
             for (const {effect} of controller._effects.values())
@@ -71,6 +77,20 @@ export async function run() {
         assert(controller._effects.size === 1 && controller._effects.has(Main.uiGroup), 'Desktop effect target');
         assert(controller._timer === 0, 'Frozen effects must not schedule redraws');
         await capture(`desktop-${preset}`);
+        const effect = [...controller._effects.values()][0].effect;
+        const history = effect._history;
+        settings.set_boolean('monochrome', true);
+        assert(settings.get_string('preset') === preset, 'Monochrome must preserve the selected effect');
+        assert(effect._history === history, 'Monochrome must preserve phosphor history');
+        await Scripting.sleep(150);
+        await capture(`desktop-${preset}-monochrome`);
+        settings.set_double('intensity', 0.2);
+        await Scripting.sleep(150);
+        await capture(`desktop-${preset}-monochrome-low-intensity`);
+        settings.set_boolean('monochrome', false);
+        settings.set_double('intensity', 0.8);
+        await Scripting.sleep(150);
+        await capture(`desktop-${preset}-color-restored`);
     }
 
     const pattern = new St.Widget({
@@ -94,12 +114,15 @@ export async function run() {
         await Scripting.sleep(250);
         await capture(`ntsc-phase-${phase}`);
     }
+    for (const preset of ['crt', 'curved-crt']) {
+        settings.set_string('preset', preset);
+        await Scripting.sleep(200);
+        await capture(`scanline-${preset}`);
+    }
     pattern.destroy();
 
-    settings.set_string('preset', 'vhs-bw');
-    settings.set_double('intensity', 0.2);
-    await Scripting.sleep(250);
-    await capture('desktop-vhs-bw-low-intensity');
+    settings.set_string('preset', 'vhs');
+    settings.set_boolean('monochrome', true);
     settings.set_double('intensity', 0.8);
     settings.set_string('scope', 'windows');
     assert(controller._effects.size === 0, 'Empty window selection must have no effects');
@@ -114,9 +137,15 @@ export async function run() {
     await Scripting.sleep(250);
     await capture('selected-transparent-window');
     settings.set_string('preset', 'ntsc');
+    settings.set_boolean('monochrome', false);
     await Scripting.sleep(250);
     await capture('selected-ntsc-windows');
-    settings.set_string('preset', 'vhs-bw');
+    for (const {id: preset} of PRESETS.filter(item => item.shader >= 6)) {
+        settings.set_string('preset', preset);
+        await Scripting.sleep(150);
+        await capture(`selected-${preset}`);
+    }
+    settings.set_string('preset', 'vhs');
     settings.set_string('scope', 'screen');
     assert(controller._effects.size === 1 && controller.selectedCount === 2, 'Scope switching preserves selection without stacking');
     settings.set_string('scope', 'windows');
@@ -129,12 +158,18 @@ export async function run() {
     const time = controller._time;
     await Scripting.sleep(200);
     assert(controller._time > time, 'Animation time must advance');
-    settings.set_string('preset', 'vhs-bw');
-    assert(controller._timer !== 0, 'Black and white VHS must animate');
+    settings.set_boolean('monochrome', true);
+    assert(controller._timer !== 0, 'Monochrome must preserve VHS animation');
+    settings.set_boolean('monochrome', false);
     settings.set_string('preset', 'ntsc');
     assert(controller._timer !== 0, 'NTSC must animate');
     settings.set_string('preset', 'scanlines');
     assert(controller._timer === 0, 'Scanlines must be static');
+    for (const preset of PRESETS.filter(item => item.shader >= 6)) {
+        settings.set_string('preset', preset.id);
+        assert(Boolean(controller._timer) === preset.animated, `${preset.id}: animation scheduling`);
+        await Scripting.sleep(100);
+    }
     settings.set_string('preset', 'vhs');
     controller._interface.set_boolean('enable-animations', false);
     assert(controller._timer === 0, 'Reduced motion must stop animation');
@@ -144,6 +179,10 @@ export async function run() {
     settings.set_double('intensity', 0.55);
 
     extension._indicator.menu.open();
+    const presetBeforeToggle = settings.get_string('preset');
+    extension._indicator._monochrome.toggle();
+    assert(settings.get_boolean('monochrome'), 'Panel Monochrome switch must update settings');
+    assert(settings.get_string('preset') === presetBeforeToggle, 'Panel toggle must preserve the effect');
     await Scripting.sleep(250);
     extension._indicator._windowMenu.menu.open();
     await Scripting.sleep(300);
@@ -154,6 +193,8 @@ export async function run() {
     windowItems[0].toggle();
     assert(controller.selectedCount === 2, 'Window menu must add a selection');
     await capture('panel-menu');
+    settings.set_boolean('monochrome', false);
+    assert(!extension._indicator._monochrome.state, 'Panel Monochrome switch must reflect external settings');
     extension._indicator.menu.close();
 
     windows[0].meta_window.make_fullscreen();

@@ -25,7 +25,7 @@ export async function run() {
         const indicator = extension._indicator;
         const controller = extension.controller;
         const menu = indicator.menu;
-        const fields = ['_enabled', '_animate', '_presetMenu', '_scopeMenu',
+        const fields = ['_enabled', '_animate', '_monochrome', '_presetMenu', '_scopeMenu',
             '_windowMenu', '_intensityLabel', '_slider', '_icon'];
         const destroyed = new Map(fields.map(field => [field, 0]));
         for (const field of fields) {
@@ -39,12 +39,15 @@ export async function run() {
         });
 
         extension.settings.set_string('scope', 'screen');
-        extension.settings.set_string('preset', 'vhs');
+        extension.settings.set_string('preset', ['vhs', 'phosphor-trails', 'curved-crt'][cycle]);
         extension.settings.set_boolean('animate', true);
         extension.settings.set_boolean('enabled', true);
         await Scripting.sleep(100);
         assert(controller._effects.size === 1, 'Desktop effect must be active');
         assert(controller._timer !== 0, 'Animation must be active');
+        const effects = [...controller._effects.values()].map(entry => entry.effect);
+        if (cycle === 1)
+            assert(effects[0]._history, 'Phosphor cycle must allocate history before disable');
         menu.open();
         indicator._presetMenu.menu.open();
         await Scripting.sleep(100);
@@ -66,6 +69,7 @@ export async function run() {
             'Extension must release its resources');
         assert(controller._effects.size === 0 && controller._timer === 0 && !controller._unredirectDisabled,
             'Controller must release effects, animation and scanout inhibition');
+        assert(effects.every(effect => effect._history === null), 'Disable must release GPU history');
         indicator.destroy();
         assert([...destroyed.values()].every(count => count === 1),
             'Repeated destroy must not destroy items twice');

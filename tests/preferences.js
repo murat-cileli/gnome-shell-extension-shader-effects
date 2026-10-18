@@ -38,12 +38,21 @@ app.connect('activate', () => {
         const combo = widgets.find(widget => widget instanceof Adw.ComboRow && widget.title === 'Effect');
         combo.selected = PRESETS.findIndex(preset => preset.id === 'crt');
         assert(settings.get_string('preset') === 'crt', 'Preset row must save settings');
+        assert(combo.model.get_string(combo.selected + 1) === 'Curved CRT', 'Curved CRT must follow CRT');
         settings.set_string('preset', 'scanlines');
         assert(combo.selected === PRESETS.findIndex(preset => preset.id === 'scanlines'), 'Preset row must reflect external settings');
-        combo.selected = PRESETS.findIndex(preset => preset.id === 'vhs-bw');
-        assert(settings.get_string('preset') === 'vhs-bw', 'Black and white VHS must be selectable');
+        const monochrome = widgets.find(widget => widget instanceof Adw.SwitchRow && widget.title === 'Monochrome');
+        monochrome.active = true;
+        assert(settings.get_boolean('monochrome'), 'Monochrome switch must save settings');
+        assert(settings.get_string('preset') === 'scanlines', 'Monochrome must preserve the selected effect');
+        settings.set_boolean('monochrome', false);
+        assert(!monochrome.active, 'Monochrome switch must reflect external settings');
         combo.selected = PRESETS.findIndex(preset => preset.id === 'ntsc');
         assert(settings.get_string('preset') === 'ntsc', 'NTSC must be selectable');
+        for (const preset of PRESETS.filter(item => item.shader >= 6)) {
+            combo.selected = PRESETS.findIndex(item => item.id === preset.id);
+            assert(settings.get_string('preset') === preset.id, `${preset.name} must be selectable`);
+        }
         const spin = widgets.find(widget => widget instanceof Adw.SpinRow && widget.title === 'Intensity');
         spin.value = 0.7;
         assert(Math.abs(settings.get_double('intensity') - 0.7) < 0.001, 'Intensity must save settings');

@@ -21,13 +21,14 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
         page.add(effects);
         this._switch(effects, settings, 'enabled', 'Enable effects', 'Turn the selected shader on or off.');
         this._combo(effects, settings, signals, 'preset', 'Effect', PRESETS);
+        this._switch(effects, settings, 'monochrome', 'Monochrome', 'Apply the selected effect in grayscale.');
         this._combo(effects, settings, signals, 'scope', 'Apply to', SCOPES);
         this._spin(effects, settings, 'intensity', 'Intensity', '0 leaves the image unchanged; 1 applies the full effect.', 0, 1, 0.05, 2);
         this._spin(effects, settings, 'scanline-spacing', 'Scanline spacing', 'Distance between lines in texture pixels.', 2, 12, 0.5, 1);
 
         const animation = new Adw.PreferencesGroup({
             title: 'Animation',
-            description: 'Both VHS presets, NTSC, and CRT respect the desktop’s reduced motion setting. Scanlines and Monochrome are static.',
+            description: 'VHS, NTSC, both CRT presets, and Phosphor Trails respect the desktop’s reduced motion setting. Other effects are static.',
         });
         page.add(animation);
         this._switch(animation, settings, 'animate', 'Animate effects', 'Disable to freeze the effect and stop continuous redraws.');

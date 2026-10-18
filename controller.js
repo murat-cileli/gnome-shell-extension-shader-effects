@@ -118,6 +118,7 @@ export class ShaderController {
         if (!entry)
             return;
         actor.disconnect(entry.mappedId);
+        entry.effect.releaseResources();
         actor.remove_effect(entry.effect);
         this._effects.delete(actor);
     }

@@ -24,7 +24,20 @@ for point in [(550, 300), (850, 300), (1040, 300),
     expected = original.getpixel(point)
     for image in [phase_zero, phase_one]:
         actual = image.getpixel(point)
-        assert max(abs(a - b) for a, b in zip(expected, actual)) <= 2, 'NTSC changes flat colors'
+        scale = sum(actual) / max(sum(expected), 1)
+        assert 0.7 <= scale <= 1.01, 'NTSC scanlines must only dim flat colors'
+        assert max(abs(a - b * scale) for a, b in zip(actual, expected)) <= 2, 'NTSC scanlines must preserve flat-color hue'
+
+# Compare line contrast on a flat red field, away from texture transitions.
+contrasts = {}
+for name, image in [('ntsc', phase_zero), ('crt', load('scanline-crt')),
+                    ('curved-crt', load('scanline-curved-crt'))]:
+    rows = [image.getpixel((550, y))[0] for y in range(280, 296)]
+    contrast = (max(rows) - min(rows)) / max(rows)
+    assert 0.18 <= contrast <= 0.27, f'{name}: scanlines must be clearly visible'
+    assert max(abs(rows[index] - rows[index + 4]) for index in range(12)) <= 2, f'{name}: scanline spacing'
+    contrasts[name] = contrast
+assert abs(contrasts['curved-crt'] - contrasts['crt']) < 0.02, 'Curved CRT must match CRT scanline contrast'
 
 detail = (100, 100, 420, 480)
 red, green, blue = original.crop(detail).split()
@@ -39,23 +52,32 @@ assert delta(original.crop(edge), phase_zero.crop(edge)) > 20, 'NTSC must affect
 
 baseline = load('desktop-original')
 selected = load('selected-ntsc-windows')
-assert max(abs(a - b) for a, b in zip(baseline.getpixel((900, 350)), selected.getpixel((900, 350)))) <= 2, 'NTSC must preserve window transparency'
+darkening = [a - b for a, b in zip(baseline.getpixel((900, 350)), selected.getpixel((900, 350)))]
+assert min(darkening) >= 0 and max(darkening) <= 60, 'NTSC must retain translucent window blending'
+assert max(darkening) - min(darkening) <= 2, 'Scanlines over translucent white must dim each channel equally'
 for region in [(650, 80, 700, 500), (80, 540, 1180, 640)]:
     assert delta(baseline.crop(region), selected.crop(region)) == 0, 'Unselected content must stay unchanged'
 
-for name in ['desktop-vhs-bw', 'desktop-vhs-bw-low-intensity']:
-    red, green, blue = load(name).split()
-    assert delta(red, green) <= 1 and delta(red, blue) <= 1, 'Black and white VHS must remain grayscale'
+presets = ['vhs', 'ntsc', 'scanlines', 'crt', 'curved-crt', 'phosphor-trails']
+for preset in presets:
+    for suffix in ['monochrome', 'monochrome-low-intensity']:
+        red, green, blue = load(f'desktop-{preset}-{suffix}').split()
+        assert delta(red, green) <= 1 and delta(red, blue) <= 1, f'{preset}: Monochrome must be grayscale at every intensity'
+    # Toggling back to color must restore the same frozen effect and its geometry.
+    region = (80, 540, 1180, 640)
+    assert delta(load(f'desktop-{preset}').crop(region), load(f'desktop-{preset}-color-restored').crop(region)) <= 1, f'{preset}: toggle must restore colors'
 
 report = {
     'ntsc_flat_colors': 'passed',
+    'scanline_contrast': contrasts,
     'ntsc_cross_color': 'passed',
     'ntsc_animated_phase': 'passed',
     'ntsc_frozen_phase': 'passed',
     'ntsc_color_bleed': 'passed',
     'ntsc_window_transparency': 'passed',
     'unselected_content': 'passed',
-    'vhs_grayscale_regression': 'passed',
+    'monochrome_all_presets_and_low_intensity': 'passed',
+    'monochrome_restores_colors': 'passed',
 }
 (IMAGES / 'render-validation.json').write_text(json.dumps(report, indent=2) + '\n')
-print('NTSC render checks and grayscale VHS regression checks passed.')
+print('NTSC, scanline contrast, and all-preset Monochrome render checks passed.')

@@ -5,9 +5,20 @@ uniform float ss_intensity;
 uniform float ss_preset;
 uniform float ss_spacing;
 uniform float ss_premultiplied;
+uniform float ss_monochrome;
 
 float ss_random(vec2 point) {
     return fract(sin(dot(point, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+float ss_luma(vec3 color) {
+    return dot(color, vec3(0.2126, 0.7152, 0.0722));
+}
+
+// Share the output-pixel grid so curved glass keeps the same line contrast as CRT.
+float ss_scanline(float y) {
+    float line = 0.5 + 0.5 * cos(y * ss_resolution.y * 6.2831853 / ss_spacing);
+    return 0.72 + 0.28 * line;
 }
 
 float ss_tracking(float y, float time) {
@@ -27,6 +38,47 @@ vec4 ss_sample(vec2 point) {
 
 vec3 ss_color(vec4 sampleColor) {
     return sampleColor.rgb / max(sampleColor.a, 0.0001);
+}
+
+// A small cross-shaped glow keeps terminal strokes clear at desktop resolution.
+float ss_glow(vec2 uv, vec3 center) {
+    vec2 stepSize = vec2(1.5) / ss_resolution;
+    float surrounding = ss_luma(ss_color(ss_sample(uv + vec2(stepSize.x, 0.0))))
+        + ss_luma(ss_color(ss_sample(uv - vec2(stepSize.x, 0.0))))
+        + ss_luma(ss_color(ss_sample(uv + vec2(0.0, stepSize.y))))
+        + ss_luma(ss_color(ss_sample(uv - vec2(0.0, stepSize.y))));
+    return max(surrounding * 0.25 - ss_luma(center), 0.0);
+}
+
+vec3 ss_terminal(vec2 uv, vec3 center, vec3 phosphor) {
+    float light = pow(max(ss_luma(center), 0.0), 0.88);
+    float lines = 0.96 + 0.04 * cos(uv.y * ss_resolution.y * 6.2831853 / ss_spacing);
+    return phosphor * (light * lines + 0.20 * ss_glow(uv, center));
+}
+
+vec2 ss_crt_uv(vec2 uv) {
+    vec2 point = uv * 2.0 - 1.0;
+    return point * (1.0 + 0.028 * ss_intensity * point.yx * point.yx) * 0.5 + 0.5;
+}
+
+vec3 ss_curved_crt(vec2 uv) {
+    vec2 point = uv * 2.0 - 1.0;
+    vec2 sourceUV = ss_crt_uv(uv);
+    vec2 bent = sourceUV * 2.0 - 1.0;
+    vec3 source = ss_color(ss_sample(sourceUV));
+    float scan = ss_scanline(uv.y);
+    float stripe = mod(floor(uv.x * ss_resolution.x), 3.0);
+    vec3 mask = vec3(0.88);
+    if (stripe < 0.5) mask.r = 1.0;
+    else if (stripe < 1.5) mask.g = 1.0;
+    else mask.b = 1.0;
+    // Rounded glass edge with a one-pixel feather; never wrap the source texture.
+    vec2 corner = max(abs(bent) - vec2(0.94), vec2(0.0));
+    float distanceToEdge = length(corner) - 0.06;
+    float glass = 1.0 - smoothstep(-2.0 / min(ss_resolution.x, ss_resolution.y), 0.0, distanceToEdge);
+    float vignette = 1.0 - 0.12 * dot(point, point);
+    return (pow(max(source, vec3(0.0)), vec3(0.91)) + ss_glow(sourceUV, source) * 0.08)
+        * mask * scan * vignette * glass * (1.0 + 0.006 * sin(ss_time * 47.0));
 }
 
 vec3 ss_rgb_to_yiq(vec3 color) {
@@ -75,7 +127,7 @@ vec3 clean = ss_color(original);
 vec3 color = clean;
 float line = 0.5 + 0.5 * cos(pixel.y * 6.2831853 / ss_spacing);
 
-if (ss_preset < 0.5 || (ss_preset > 3.5 && ss_preset < 4.5)) {
+if (ss_preset < 0.5) {
     // Preserve the default look; progressively strengthen the upper intensity range.
     float boost = smoothstep(0.55, 1.0, ss_intensity);
     float frame = floor(ss_time * 30.0);
@@ -110,18 +162,36 @@ if (ss_preset < 0.5 || (ss_preset > 3.5 && ss_preset < 4.5)) {
     else
         mask.b = 1.0;
     color = pow(max(color, vec3(0.0)), vec3(0.93));
-    color *= mask * (0.72 + 0.28 * line) * max(vignette, 0.0);
+    color *= mask * ss_scanline(uv.y) * max(vignette, 0.0);
     color *= 1.0 + 0.012 * sin(ss_time * 47.0);
-} else if (ss_preset < 3.5) {
-    float luma = dot(clean, vec3(0.2126, 0.7152, 0.0722));
-    color = vec3(luma);
+} else if (ss_preset < 5.5) {
+    color = ss_ntsc(uv, clean, original.a) * ss_scanline(uv.y);
+} else if (ss_preset < 6.5) {
+    // Blend appearance at the same warped coordinates to avoid double text at partial intensity.
+    clean = ss_color(ss_sample(ss_crt_uv(uv)));
+    color = ss_curved_crt(uv);
 } else {
-    color = ss_ntsc(uv, clean, original.a);
+    vec4 history = texture2D(cogl_sampler1, uv);
+    float afterglow = max(history.r / max(history.a, 0.0001) - ss_luma(clean), 0.0);
+    color = ss_terminal(uv, clean, vec3(0.35, 1.0, 0.50)) + vec3(0.20, 0.85, 0.36) * afterglow;
 }
 
 vec3 result = clamp(mix(clean, color, ss_intensity), 0.0, 1.0);
-if (ss_preset > 3.5 && ss_preset < 4.5)
-    result = vec3(dot(result, vec3(0.2126, 0.7152, 0.0722)));
+if (ss_monochrome > 0.5)
+    result = vec3(ss_luma(result));
 result *= mix(1.0, original.a, ss_premultiplied);
 cogl_color_out = vec4(result, original.a) * cogl_color_in;
+`;
+
+// GPU feedback stores premultiplied luminance, with the current frame's coverage.
+// No screen pixels are read back to JavaScript or persisted to disk.
+export const HISTORY_DECLARATIONS = `uniform float ss_decay;`;
+export const HISTORY_FRAGMENT = `
+vec2 uv = cogl_tex_coord_in[0].xy;
+vec4 source = texture2D(cogl_sampler0, uv);
+vec4 previous = texture2D(cogl_sampler1, uv);
+float light = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
+float coverage = min(source.a / max(previous.a, 0.0001), 1.0);
+float glow = max(light, previous.r * ss_decay * coverage);
+cogl_color_out = vec4(vec3(glow), source.a);
 `;

@@ -37,6 +37,10 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         }
         this.menu.addMenuItem(this._presetMenu);
 
+        this._monochrome = new PopupMenu.PopupSwitchMenuItem('Monochrome', false);
+        this._monochrome.connect('toggled', (_item, state) => this._settings.set_boolean('monochrome', state));
+        this.menu.addMenuItem(this._monochrome);
+
         this._scopeMenu = new PopupMenu.PopupSubMenuMenuItem('Apply to');
         this._scopeItems = new Map();
         for (const scope of SCOPES) {
@@ -91,6 +95,8 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         this._enabled = null;
         this._animate.destroy();
         this._animate = null;
+        this._monochrome.destroy();
+        this._monochrome = null;
         this._presetMenu.destroy();
         this._presetMenu = null;
         this._scopeMenu.destroy();
@@ -144,6 +150,7 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         const preset = PRESETS.find(item => item.id === presetId);
         const scope = SCOPES.find(item => item.id === scopeId);
         this._enabled.setToggleState(enabled);
+        this._monochrome.setToggleState(this._settings.get_boolean('monochrome'));
         this._animate.setToggleState(this._settings.get_boolean('animate'));
         this._animate.setSensitive(preset.animated);
         this._presetMenu.label.text = `Effect: ${preset.name}`;
