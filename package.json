@@ -1,0 +1,10 @@
+{
+  "name": "gnome-shell-shaders",
+  "version": "1.3.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "python3 tools/check.py",
+    "pack": "python3 tools/package.py"
+  }
+}

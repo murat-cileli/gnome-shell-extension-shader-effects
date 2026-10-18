@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.shell-shaders" path="/org/gnome/shell/extensions/shell-shaders/">
+    <key name="enabled" type="b">
+      <default>false</default>
+      <summary>Enable shader effects</summary>
+    </key>
+    <key name="scope" type="s">
+      <choices><choice value="screen"/><choice value="windows"/></choices>
+      <default>'screen'</default>
+      <summary>Apply effects to the desktop or selected windows</summary>
+    </key>
+    <key name="preset" type="s">
+      <choices><choice value="vhs"/><choice value="vhs-bw"/><choice value="ntsc"/><choice value="scanlines"/><choice value="crt"/><choice value="monochrome"/></choices>
+      <default>'vhs'</default>
+      <summary>Shader preset</summary>
+    </key>
+    <key name="intensity" type="d">
+      <range min="0.0" max="1.0"/>
+      <default>0.55</default>
+      <summary>Effect intensity</summary>
+    </key>
+    <key name="animate" type="b">
+      <default>true</default>
+      <summary>Animate VHS, NTSC, and CRT effects</summary>
+    </key>
+    <key name="speed" type="d">
+      <range min="0.1" max="3.0"/>
+      <default>1.0</default>
+      <summary>Animation speed</summary>
+    </key>
+    <key name="scanline-spacing" type="d">
+      <range min="2.0" max="12.0"/>
+      <default>4.0</default>
+      <summary>Scanline spacing in texture pixels</summary>
+    </key>
+    <key name="frame-rate" type="i">
+      <range min="10" max="60"/>
+      <default>30</default>
+      <summary>Maximum animation updates per second</summary>
+    </key>
+    <key name="toggle-shortcut" type="as">
+      <default>['&lt;Super&gt;&lt;Alt&gt;v']</default>
+      <summary>Toggle all effects</summary>
+    </key>
+    <key name="window-shortcut" type="as">
+      <default>['&lt;Super&gt;&lt;Alt&gt;w']</default>
+      <summary>Toggle the focused window selection</summary>
+    </key>
+    <key name="cycle-shortcut" type="as">
+      <default>['&lt;Super&gt;&lt;Alt&gt;c']</default>
+      <summary>Cycle shader presets</summary>
+    </key>
+  </schema>
+</schemalist>

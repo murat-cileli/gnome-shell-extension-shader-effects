@@ -1,0 +1,4 @@
+dist/
+schemas/gschemas.compiled
+__pycache__/
+test-results/
