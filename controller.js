@@ -94,7 +94,7 @@ export class ShaderController {
                 const effect = new ShaderEffect();
                 effect.configure(this._settings);
                 effect.setTime(this._time);
-                actor.add_effect_with_name('shell-shaders-effect', effect);
+                actor.add_effect_with_name('shader-effects-effect', effect);
                 const mappedId = actor.connect('notify::mapped', () => this._syncAnimation());
                 entry = {effect, mappedId};
                 this._effects.set(actor, entry);

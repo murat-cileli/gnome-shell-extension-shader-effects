@@ -40,7 +40,7 @@ export async function run() {
     Gio._promisify(Shell.Screenshot.prototype, 'screenshot');
     Main.overview.hide();
     await Scripting.sleep(1000);
-    const extension = Main.extensionManager.lookup('shell-shaders@muratc.com').stateObj;
+    const extension = Main.extensionManager.lookup('shader-effects@muratc.com').stateObj;
     const {DECLARATIONS} = await import(extension.dir.get_child('shaderSource.js').get_uri());
     const fragment = 'float mask = ss_tracking(cogl_tex_coord_in[0].y, ss_time); cogl_color_out = vec4(vec3(mask), 1.0);';
     const Base = Shell.GLSLEffect ?? Clutter.ShaderEffect;

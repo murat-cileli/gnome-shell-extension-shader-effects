@@ -1,8 +1,8 @@
 {
-  "uuid": "shell-shaders@muratc.com",
+  "uuid": "shader-effects@muratc.com",
   "name": "Shader Effects",
   "description": "Apply customizable GPU-powered shader effects to your GNOME desktop, including CRT scanlines, VHS distortion, RGB shifts, and more.",
   "shell-version": ["50", "51"],
-  "settings-schema": "org.gnome.shell.extensions.shell-shaders",
-  "version": 5
+  "settings-schema": "org.gnome.shell.extensions.shader-effects",
+  "version": 6
 }

@@ -31,7 +31,7 @@ export async function run() {
     Gio._promisify(Shell.Screenshot.prototype, 'screenshot');
     Main.overview.hide();
     await Scripting.sleep(1500);
-    const record = Main.extensionManager.lookup('shell-shaders@muratc.com');
+    const record = Main.extensionManager.lookup('shader-effects@muratc.com');
     assert(record?.stateObj?.controller, `Extension did not enable: ${record?.errors}`);
     const extension = record.stateObj;
     const {settings, controller} = extension;
@@ -170,10 +170,10 @@ export async function run() {
     await Main.extensionManager.disableExtension(extension.uuid);
     await Scripting.sleep(100);
     assert(oldController._effects.size === 0 && oldController._timer === 0, 'Disable must clean up effects and timers');
-    assert(!Main.uiGroup.get_effect('shell-shaders-effect'), 'Disable must remove the desktop effect');
-    await Main.extensionManager.enableExtension('shell-shaders@muratc.com');
+    assert(!Main.uiGroup.get_effect('shader-effects-effect'), 'Disable must remove the desktop effect');
+    await Main.extensionManager.enableExtension('shader-effects@muratc.com');
     await Scripting.sleep(300);
-    const next = Main.extensionManager.lookup('shell-shaders@muratc.com').stateObj;
+    const next = Main.extensionManager.lookup('shader-effects@muratc.com').stateObj;
     assert(next.controller, 'Extension must re-enable');
     next.settings.set_boolean('enabled', false);
     assert(next.controller._effects.size === 0, 'Effects can be disabled after re-enable');

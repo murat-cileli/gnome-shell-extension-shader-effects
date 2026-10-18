@@ -7,7 +7,7 @@ import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/ex
 
 import {PRESETS, SCOPES} from './presets.js';
 
-export default class ShellShadersPreferences extends ExtensionPreferences {
+export default class ShaderEffectsPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
         const signals = [];

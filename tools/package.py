@@ -9,7 +9,7 @@ metadata = json.loads((ROOT / 'metadata.json').read_text())
 destination = ROOT / 'dist' / f'{metadata["uuid"]}.shell-extension.zip'
 destination.parent.mkdir(exist_ok=True)
 
-with tempfile.TemporaryDirectory(prefix='shell-shaders-package-') as directory:
+with tempfile.TemporaryDirectory(prefix='shader-effects-package-') as directory:
     compiled = Path(directory)
     subprocess.run([
         'glib-compile-schemas', '--strict', '--targetdir', str(compiled), str(ROOT / 'schemas'),

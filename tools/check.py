@@ -13,11 +13,11 @@ def run(*args):
 
 metadata = json.loads((ROOT / 'metadata.json').read_text())
 assert metadata['shell-version'][0] == '50'
-assert metadata['settings-schema'] == 'org.gnome.shell.extensions.shell-shaders'
+assert metadata['settings-schema'] == 'org.gnome.shell.extensions.shader-effects'
 for source in sorted([*ROOT.glob('*.js'), *(ROOT / 'tests').glob('*.js')]):
     run('node', '--check', str(source))
 
-with tempfile.TemporaryDirectory(prefix='shell-shaders-check-') as directory:
+with tempfile.TemporaryDirectory(prefix='shader-effects-check-') as directory:
     target = Path(directory)
     run('glib-compile-schemas', '--strict', '--targetdir', str(target), str(ROOT / 'schemas'))
     if not shutil.which('glslangValidator'):

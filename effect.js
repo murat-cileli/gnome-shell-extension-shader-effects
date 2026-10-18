@@ -8,7 +8,7 @@ import {PRESETS} from './presets.js';
 
 const EffectBase = Shell.GLSLEffect ?? Clutter.ShaderEffect;
 
-class ShellShadersEffect extends EffectBase {
+class ShaderEffectsEffect extends EffectBase {
     _init() {
         super._init();
         this._uniforms = new Map();
@@ -43,13 +43,13 @@ class ShellShadersEffect extends EffectBase {
 }
 
 if (Shell.GLSLEffect) {
-    Object.defineProperty(ShellShadersEffect.prototype, 'vfunc_build_pipeline', {
+    Object.defineProperty(ShaderEffectsEffect.prototype, 'vfunc_build_pipeline', {
         value() {
             this.add_glsl_snippet(Cogl.SnippetHook.FRAGMENT, DECLARATIONS, FRAGMENT, true);
         },
     });
 } else {
-    Object.defineProperty(ShellShadersEffect.prototype, 'vfunc_get_static_snippet', {
+    Object.defineProperty(ShaderEffectsEffect.prototype, 'vfunc_get_static_snippet', {
         value() {
             const snippet = Cogl.Snippet.new(Cogl.SnippetHook.FRAGMENT, DECLARATIONS, null);
             snippet.set_replace(FRAGMENT);
@@ -58,4 +58,4 @@ if (Shell.GLSLEffect) {
     });
 }
 
-export const ShaderEffect = GObject.registerClass(ShellShadersEffect);
+export const ShaderEffect = GObject.registerClass(ShaderEffectsEffect);

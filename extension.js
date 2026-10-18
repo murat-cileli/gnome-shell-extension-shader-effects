@@ -15,7 +15,7 @@ import {ShaderController} from './controller.js';
 import {PRESETS, SCOPES} from './presets.js';
 
 const ShaderIndicator = GObject.registerClass(
-class ShellShadersIndicator extends PanelMenu.Button {
+class ShaderEffectsIndicator extends PanelMenu.Button {
     _init(extension) {
         super._init(0.0, 'Shader Effects');
         this._extension = extension;
@@ -130,7 +130,7 @@ class ShellShadersIndicator extends PanelMenu.Button {
     }
 });
 
-export default class ShellShadersExtension extends Extension {
+export default class ShaderEffectsExtension extends Extension {
     enable() {
         this._bindings = [];
         try {

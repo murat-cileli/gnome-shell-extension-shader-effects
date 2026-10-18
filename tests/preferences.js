@@ -15,7 +15,7 @@ const {default: Preferences} = await import(directory.get_child('prefs.js').get_
 const {PRESETS} = await import(directory.get_child('presets.js').get_uri());
 const preferences = new Preferences(metadata);
 const settings = preferences.getSettings();
-const app = new Adw.Application({application_id: 'com.muratc.ShellShaders.PreferencesTest', flags: Gio.ApplicationFlags.NON_UNIQUE});
+const app = new Adw.Application({application_id: 'com.muratc.ShaderEffects.PreferencesTest', flags: Gio.ApplicationFlags.NON_UNIQUE});
 
 function assert(condition, message) {
     if (!condition)
