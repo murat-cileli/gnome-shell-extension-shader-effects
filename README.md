@@ -1,8 +1,4 @@
-<video
-  src="https://github.com/user-attachments/assets/4fd6cd11-e56a-490d-ac1b-d9382d93453b"
-  width="640"
-  controls>
-</video>
+https://github.com/user-attachments/assets/defff696-ebf9-4612-be82-b0326225643b
 
 # Shader Effects
 
