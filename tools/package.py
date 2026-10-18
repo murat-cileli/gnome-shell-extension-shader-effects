@@ -20,6 +20,7 @@ with tempfile.TemporaryDirectory(prefix='shader-effects-package-') as directory:
     with zipfile.ZipFile(destination, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
         for source in files:
             archive.write(source, source.relative_to(ROOT))
-        archive.write(compiled / 'gschemas.compiled', 'schemas/gschemas.compiled')
+        # GNOME 44+ compiles the included schema XML during installation.
+        # Keep strict compilation above as validation, but do not ship the binary.
 
 print(destination)

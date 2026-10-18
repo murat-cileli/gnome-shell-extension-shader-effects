@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -12,7 +13,9 @@ def run(*args):
 
 
 metadata = json.loads((ROOT / 'metadata.json').read_text())
-assert metadata['shell-version'][0] == '50'
+project_url = urlsplit(metadata.get('url', ''))
+assert project_url.scheme in ('https', 'http') and project_url.hostname, 'metadata.json requires a valid project URL for GNOME Extensions uploads'
+assert metadata['shell-version'] == ['48', '49', '50', '51']
 assert metadata['settings-schema'] == 'org.gnome.shell.extensions.shader-effects'
 for source in sorted([*ROOT.glob('*.js'), *(ROOT / 'tests').glob('*.js')]):
     run('node', '--check', str(source))

@@ -69,13 +69,45 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         this.menu.addMenuItem(this._animate);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addAction('Preferences', () => extension.openPreferences());
-        this.menu.connect('open-state-changed', (_menu, open) => {
+        this._menuOpenId = this.menu.connect('open-state-changed', (_menu, open) => {
             if (open) {
                 this._rebuildWindows();
                 this.sync();
             }
         });
         this.sync();
+    }
+
+    destroy() {
+        if (this._destroyed)
+            return;
+        this._destroyed = true;
+
+        this.menu.disconnect(this._menuOpenId);
+        this._menuOpenId = 0;
+
+        // Remove owned items before the parent destroys the remaining menu.
+        this._enabled.destroy();
+        this._enabled = null;
+        this._animate.destroy();
+        this._animate = null;
+        this._presetMenu.destroy();
+        this._presetMenu = null;
+        this._scopeMenu.destroy();
+        this._scopeMenu = null;
+        this._windowMenu.destroy();
+        this._windowMenu = null;
+        this._intensityLabel.destroy();
+        this._intensityLabel = null;
+        this._slider.destroy();
+        this._slider = null;
+        this._presetItems.clear();
+        this._scopeItems.clear();
+
+        super.destroy();
+        this._icon = null;
+        this._settings = null;
+        this._extension = null;
     }
 
     _rebuildWindows() {
