@@ -76,12 +76,14 @@ vec3 color = clean;
 float line = 0.5 + 0.5 * cos(pixel.y * 6.2831853 / ss_spacing);
 
 if (ss_preset < 0.5 || (ss_preset > 3.5 && ss_preset < 4.5)) {
+    // Preserve the default look; progressively strengthen the upper intensity range.
+    float boost = smoothstep(0.55, 1.0, ss_intensity);
     float frame = floor(ss_time * 30.0);
     float band = floor(pixel.y / 12.0);
-    float jitter = (ss_random(vec2(band, frame)) - 0.5) * 1.8;
+    float jitter = (ss_random(vec2(band, frame)) - 0.5) * mix(1.8, 4.5, boost);
     float tracking = ss_tracking(uv.y, ss_time);
-    vec2 shifted = uv + vec2((jitter + tracking * 5.0) / ss_resolution.x, 0.0) * ss_intensity;
-    float separation = 2.5 / ss_resolution.x;
+    vec2 shifted = uv + vec2((jitter + tracking * mix(5.0, 12.0, boost)) / ss_resolution.x, 0.0) * ss_intensity;
+    float separation = mix(2.5, 5.0, boost) / ss_resolution.x;
     vec3 center = ss_color(ss_sample(shifted));
     color = vec3(
         ss_color(ss_sample(shifted + vec2(separation, 0.0))).r,
@@ -90,10 +92,10 @@ if (ss_preset < 0.5 || (ss_preset > 3.5 && ss_preset < 4.5)) {
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
     color = mix(vec3(luma), color, 0.82);
     float grain = ss_random(floor(pixel) + vec2(frame, frame * 0.73)) - 0.5;
-    color += grain * 0.12 + tracking * 0.045;
-    color *= 0.91 + 0.09 * line;
+    color += grain * mix(0.12, 0.22, boost) + tracking * mix(0.045, 0.08, boost);
+    color *= 1.0 - mix(0.09, 0.18, boost) * (1.0 - line);
     float headNoise = smoothstep(0.965, 1.0, uv.y);
-    color += headNoise * grain * 0.35;
+    color += headNoise * grain * mix(0.35, 0.55, boost);
 } else if (ss_preset < 1.5) {
     color *= 0.60 + 0.40 * line;
 } else if (ss_preset < 2.5) {

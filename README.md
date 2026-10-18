@@ -51,6 +51,8 @@ Click the display icon in the top panel and switch on **Enable effects**. Choose
 
 Open **Preferences** for intensity, scanline spacing, animation speed, frame rate, and editable shortcuts. A shortcut may conflict with another desktop action; change or disable it in Preferences. Effect settings and shortcuts are saved through GSettings.
 
+Both VHS presets become progressively more pronounced above 55% intensity, with stronger tape jitter, tracking distortion, grain, and scanlines. At 100%, RGB separation reaches 5 texture pixels per channel offset. The default 55% appearance stays unchanged.
+
 ```sh
 gnome-extensions prefs shader-effects@muratc.com
 gnome-extensions disable shader-effects@muratc.com
