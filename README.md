@@ -4,8 +4,6 @@ https://github.com/user-attachments/assets/defff696-ebf9-4612-be82-b0326225643b
 
 Apply customizable GPU-powered shader effects to your GNOME desktop, including CRT scanlines, VHS distortion, RGB shifts, and more.
 
-Apply effects to the entire desktop or a selection of individual windows. Supports GNOME Shell 48, 49, 50, and 51.
-
 ## Effects
 
 | Preset | Appearance |
@@ -77,7 +75,3 @@ Effects use offscreen textures. Large desktops and high resolution windows consu
 | `schemas/` | GSettings schema |
 | `tools/` | Validation and ZIP packaging |
 | `tests/` | Shell integration test |
-
-GNOME 48–50 use `Shell.GLSLEffect`, available in both the [GNOME 48](https://github.com/GNOME/gnome-shell/blob/gnome-48/src/shell-glsl-effect.c) and [GNOME 50](https://github.com/GNOME/gnome-shell/blob/gnome-50/src/shell-glsl-effect.c) implementations. Shader snippets are installed only during pipeline construction; uniforms are set on each effect instance afterwards. The newer `St.ReducedMotion` API is used only when available; all supported versions also respect `enable-animations`.
-
-GNOME 51 uses the replacement shader API described in the [GNOME 51 porting guide](https://gjs.guide/extensions/upgrading/gnome-shell-51.html).
