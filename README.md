@@ -117,3 +117,15 @@ python3 tools/test-shell.py lifecycle.js
 The Shell tests use a separate headless compositor, temporary XDG directories,
 and in-memory settings. They require GNOME Shell and a working GPU render node.
 Captures contain synthetic test content and are saved in `test-results/`.
+
+## License
+
+Shader Effects is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 2 of the License, or (at your option) any later version
+(`GPL-2.0-or-later`).
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See [LICENSE](LICENSE) for the full license text. The license
+is included in the extension ZIP.

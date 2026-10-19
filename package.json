@@ -1,6 +1,7 @@
 {
   "name": "gnome-shader-effects",
   "version": "1.8.0",
+  "license": "GPL-2.0-or-later",
   "private": true,
   "type": "module",
   "scripts": {

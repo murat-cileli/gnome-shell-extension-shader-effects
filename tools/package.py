@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory(prefix='shader-effects-package-') as directory:
     subprocess.run([
         'glib-compile-schemas', '--strict', '--targetdir', str(compiled), str(ROOT / 'schemas'),
     ], check=True)
-    files = [ROOT / 'metadata.json', ROOT / 'README.md']
+    files = [ROOT / 'metadata.json', ROOT / 'README.md', ROOT / 'LICENSE']
     files.extend(sorted(ROOT.glob('*.js')))
     files.extend(sorted((ROOT / 'schemas').glob('*.xml')))
     with zipfile.ZipFile(destination, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
