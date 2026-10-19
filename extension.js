@@ -83,10 +83,6 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
     }
 
     destroy() {
-        if (this._destroyed)
-            return;
-        this._destroyed = true;
-
         this.menu.disconnect(this._menuOpenId);
         this._menuOpenId = 0;
 
@@ -110,10 +106,10 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         this._presetItems.clear();
         this._scopeItems.clear();
 
-        super.destroy();
         this._icon = null;
         this._settings = null;
         this._extension = null;
+        super.destroy();
     }
 
     _rebuildWindows() {
@@ -155,7 +151,7 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         this._animate.setSensitive(preset.animated);
         this._presetMenu.label.text = `Effect: ${preset.name}`;
         this._scopeMenu.label.text = `Apply to: ${scope.name}`;
-        this._windowMenu.label.text = `Selected windows (${this._extension.controller?.selectedCount ?? 0})`;
+        this._windowMenu.label.text = `Selected windows (${this._extension.controller.selectedCount})`;
         this._windowMenu.setSensitive(scopeId === 'windows');
         for (const [id, item] of this._presetItems)
             item.setOrnament(id === presetId ? PopupMenu.Ornament.DOT : PopupMenu.Ornament.NONE);
@@ -172,37 +168,26 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
 export default class ShaderEffectsExtension extends Extension {
     enable() {
         this._bindings = [];
-        try {
-            this.settings = this.getSettings();
-            this.controller = new ShaderController(this.settings, () => this._indicator?.sync());
-            this._indicator = new ShaderIndicator(this);
-            Main.panel.addToStatusArea(this.uuid, this._indicator);
-            this._settingsId = this.settings.connect('changed', () => this._indicator.sync());
-            this._addBinding('toggle-shortcut', () => {
-                this.settings.set_boolean('enabled', !this.settings.get_boolean('enabled'));
-            });
-            this._addBinding('window-shortcut', () => {
-                const actor = global.display.focus_window?.get_compositor_private();
-                if (!actor || !this.controller.getWindows().includes(actor))
-                    return;
-                this.settings.set_string('scope', 'windows');
-                this.controller.toggleWindow(actor);
-                this.settings.set_boolean('enabled', true);
-            });
-            this._addBinding('cycle-shortcut', () => {
-                const index = PRESETS.findIndex(item => item.id === this.settings.get_string('preset'));
-                this.settings.set_string('preset', PRESETS[(index + 1) % PRESETS.length].id);
-            });
-        } catch (error) {
-            this.disable();
-            throw error;
-        }
-    }
-
-    _addBinding(name, callback) {
-        Main.wm.addKeybinding(name, this.settings, Meta.KeyBindingFlags.NONE,
-            Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW, callback);
-        this._bindings.push(name);
+        this.settings = this.getSettings();
+        this.controller = new ShaderController(this.settings, () => this._indicator?.sync());
+        this._indicator = new ShaderIndicator(this);
+        Main.panel.addToStatusArea(this.uuid, this._indicator);
+        this._settingsId = this.settings.connect('changed', () => this._indicator.sync());
+        this._addBinding('toggle-shortcut', () => {
+            this.settings.set_boolean('enabled', !this.settings.get_boolean('enabled'));
+        });
+        this._addBinding('window-shortcut', () => {
+            const actor = global.display.focus_window?.get_compositor_private();
+            if (!actor || !this.controller.getWindows().includes(actor))
+                return;
+            this.settings.set_string('scope', 'windows');
+            this.controller.toggleWindow(actor);
+            this.settings.set_boolean('enabled', true);
+        });
+        this._addBinding('cycle-shortcut', () => {
+            const index = PRESETS.findIndex(item => item.id === this.settings.get_string('preset'));
+            this.settings.set_string('preset', PRESETS[(index + 1) % PRESETS.length].id);
+        });
     }
 
     disable() {
@@ -218,5 +203,11 @@ export default class ShaderEffectsExtension extends Extension {
         this._indicator?.destroy();
         this._indicator = null;
         this.settings = null;
+    }
+
+    _addBinding(name, callback) {
+        Main.wm.addKeybinding(name, this.settings, Meta.KeyBindingFlags.NONE,
+            Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW, callback);
+        this._bindings.push(name);
     }
 }

@@ -64,7 +64,9 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
 
         const selection = new Adw.PreferencesGroup({
             title: 'Window selection',
-            description: 'Open the Shader Effects panel menu, choose Selected windows, then check the windows to affect. Selections last until a window closes, the extension is disabled, or you log out. Effect settings are saved automatically.',
+            description: 'Open the Shader Effects panel menu, choose Selected windows, then check the windows to affect. '
+                + 'Selections last until a window closes, the extension is disabled, or you log out. '
+                + 'Effect settings are saved automatically.',
         });
         page.add(selection);
         window.connect('close-request', () => {
