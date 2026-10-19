@@ -15,9 +15,8 @@ class ShaderEffectsEffect extends EffectBase {
         this._history = null;
         this._preset = null;
         this._uniforms = new Map();
-        for (const name of ['resolution', 'time', 'intensity', 'preset', 'spacing', 'premultiplied', 'monochrome'])
+        for (const name of ['resolution', 'time', 'intensity', 'preset', 'spacing', 'monochrome'])
             this._uniforms.set(name, Shell.GLSLEffect ? this.get_uniform_location(`ss_${name}`) : `ss_${name}`);
-        this._set('premultiplied', [Shell.GLSLEffect ? 0 : 1]);
         this.setTime(0);
     }
 

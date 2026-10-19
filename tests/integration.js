@@ -91,6 +91,23 @@ export async function run() {
         settings.set_double('intensity', 0.8);
         await Scripting.sleep(150);
         await capture(`desktop-${preset}-color-restored`);
+        if (['lcd', 'dithering', 'water'].includes(preset)) {
+            settings.set_double('intensity', 1);
+            effect.setTime(0);
+            await Scripting.sleep(150);
+            await capture(`desktop-${preset}-full`);
+            if (preset === 'water') {
+                effect.setTime(1.7);
+                await Scripting.sleep(150);
+                await capture('desktop-water-next');
+                await Scripting.sleep(150);
+                await capture('desktop-water-frozen');
+            }
+            settings.set_double('intensity', 0);
+            await Scripting.sleep(150);
+            await capture(`desktop-${preset}-zero`);
+            settings.set_double('intensity', 0.8);
+        }
     }
 
     const pattern = new St.Widget({

@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "python3 tools/check.py",
-    "pack": "python3 tools/package.py"
+    "check": "./build.sh --check",
+    "pack": "./build.sh"
   }
 }
