@@ -5,6 +5,10 @@ export const PRESETS = Object.freeze([
     {id: 'crt', name: 'CRT', shader: 2, animated: true},
     {id: 'curved-crt', name: 'Curved CRT', shader: 6, animated: true},
     {id: 'phosphor-trails', name: 'Phosphor Trails', shader: 7, animated: true},
+    {id: 'lcd', name: 'LCD / Game Boy', shader: 8, animated: false},
+    {id: 'dithering', name: 'Dithering', shader: 9, animated: false},
+    {id: 'water', name: 'Water Ripples', shader: 10, animated: true},
+    {id: 'rain', name: 'Rain', shader: 11, animated: true},
 ]);
 
 export const SCOPES = Object.freeze([

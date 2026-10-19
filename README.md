@@ -14,6 +14,10 @@ Apply customizable GPU-powered shader effects to your GNOME desktop, including C
 | CRT | RGB phosphor mask, scanlines, vignette, and subtle animated flicker |
 | Curved CRT | Gently curved glass, rounded edges, RGB mask, glow, and scanlines |
 | Phosphor Trails | Green phosphor with real, exponentially fading trails behind bright moving content |
+| LCD / Game Boy | Static pixel grid with the four-tone green palette of a classic handheld display |
+| Dithering | Static ordered dithering with four levels per color channel |
+| Water Ripples | Gently animated waves that distort the image like a water surface |
+| Rain | Slanted falling rain with three layers of streaks moving at different speeds |
 
 The additional CRT and phosphor effects are original GLSL implementations inspired by
 the display styles in [libretro/common-shaders](https://github.com/libretro/common-shaders),
@@ -56,7 +60,7 @@ Click the display icon in the top panel and switch on **Enable effects**. Choose
 - **Selected windows** processes only windows checked in **Selected windows**. You can select multiple windows, including windows on other workspaces. An empty selection applies no effects.
 
 Switch on **Monochrome** in the panel menu or Preferences to render the selected
-effect in grayscale. It works with all six effects, preserves the effect's
+effect in grayscale. It works with all ten effects, preserves the effect's
 animation and settings, and remains enabled when you switch effects. Conversion
 is applied after intensity blending, so even low-intensity effects stay fully
 grayscale. Switch it off to restore color. The choice is saved automatically.
@@ -67,7 +71,7 @@ grayscale. Switch it off to restore color. The choice is saved automatically.
 | Super+Alt+W | Add or remove the focused window, switch to Selected windows, and enable effects |
 | Super+Alt+C | Cycle through the six presets |
 
-Open **Preferences** for intensity, scanline spacing, animation speed, frame rate, and editable shortcuts. **Scanline spacing** controls the distance between lines in texture pixels; larger values produce a coarser pattern. A shortcut may conflict with another desktop action; change or disable it in Preferences. Effect settings and shortcuts are saved through GSettings.
+Open **Preferences** for intensity, line / pixel spacing, animation speed, frame rate, and editable shortcuts. **Line / pixel spacing** controls the distance between scanlines or the LCD pixel size in texture pixels; dithering uses half this size for its pattern cells. Larger values produce a coarser pattern. LCD and dithering are static; Water Ripples and Rain use the animation controls and respect reduced motion. A shortcut may conflict with another desktop action; change or disable it in Preferences. Effect settings and shortcuts are saved through GSettings.
 
 The default 55% intensity blends the retro appearance with the original image.
 Use 100% for the full effect. Curved CRT gradually bends the
@@ -117,6 +121,9 @@ Effects use offscreen textures. Large desktops and high resolution windows consu
 ./build.sh --check
 python3 tools/test-shell.py
 python3 tests/check_renders.py
+python3 tests/check_pixel_renders.py
+python3 tools/test-shell.py rain.js
+python3 tests/check_rain_renders.py
 python3 tools/test-shell.py retro.js
 python3 tests/check_retro_renders.py
 python3 tools/test-shell.py lifecycle.js
@@ -125,6 +132,16 @@ python3 tools/test-shell.py lifecycle.js
 The Shell tests use a separate headless compositor, temporary XDG directories,
 and in-memory settings. They require GNOME Shell and a working GPU render node.
 Captures contain synthetic test content and are saved in `test-results/`.
+The image checks require Pillow. `check_pixel_renders.py` independently checks
+LCD, dithering, water animation/freeze, zero intensity, monochrome, and selection.
+`rain.js` and `check_rain_renders.py` check rain animation and transparent window
+margins using synthetic content. Both shader backends require premultiplied RGB
+output: multiply the final color by the original alpha to prevent colored
+rectangles around transparent margins and shadows, especially with LCD ink.
+If the full integration run fails, inspect `test-results/integration.log` before
+treating existing captures as a successful run. Known environment-dependent
+blockers include unavailable `Cogl.Pipeline.get_context()` for Phosphor Trails
+and the preferences test's `/usr/share/gnome-shell/` resource path on NixOS.
 
 ## License
 

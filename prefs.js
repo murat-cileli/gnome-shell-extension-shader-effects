@@ -24,11 +24,11 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
         this._switch(effects, settings, 'monochrome', 'Monochrome', 'Apply the selected effect in grayscale.');
         this._combo(effects, settings, signals, 'scope', 'Apply to', SCOPES);
         this._spin(effects, settings, 'intensity', 'Intensity', '0 leaves the image unchanged; 1 applies the full effect.', 0, 1, 0.05, 2);
-        this._spin(effects, settings, 'scanline-spacing', 'Scanline spacing', 'Distance between lines in texture pixels.', 2, 12, 0.5, 1);
+        this._spin(effects, settings, 'scanline-spacing', 'Line / pixel spacing', 'Scanline spacing or LCD pixel size in texture pixels. Dithering uses half this size.', 2, 12, 0.5, 1);
 
         const animation = new Adw.PreferencesGroup({
             title: 'Animation',
-            description: 'VHS, NTSC, both CRT presets, and Phosphor Trails respect the desktop’s reduced motion setting. Other effects are static.',
+            description: 'VHS, NTSC, both CRT presets, Phosphor Trails, Water Ripples, and Rain respect the desktop’s reduced motion setting. Other effects are static.',
         });
         page.add(animation);
         this._switch(animation, settings, 'animate', 'Animate effects', 'Disable to freeze the effect and stop continuous redraws.');

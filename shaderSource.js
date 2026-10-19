@@ -4,7 +4,6 @@ uniform float ss_time;
 uniform float ss_intensity;
 uniform float ss_preset;
 uniform float ss_spacing;
-uniform float ss_premultiplied;
 uniform float ss_monochrome;
 
 float ss_random(vec2 point) {
@@ -117,6 +116,57 @@ vec3 ss_ntsc(vec2 uv, vec3 center, float alpha) {
     }
     return ss_yiq_to_rgb(decoded);
 }
+
+// Ordered 4x4 Bayer thresholds without arrays, for desktop GLSL 120 and GLES 100.
+float ss_bayer2(vec2 cell) {
+    return 2.0 * cell.x + 3.0 * cell.y - 4.0 * cell.x * cell.y;
+}
+
+float ss_bayer4(vec2 cell) {
+    vec2 point = mod(cell, 4.0);
+    return (4.0 * ss_bayer2(mod(point, 2.0))
+        + ss_bayer2(floor(point / 2.0)) + 0.5) / 16.0;
+}
+
+vec3 ss_lcd(vec2 uv, vec3 center, float alpha) {
+    vec2 pixel = uv * ss_resolution;
+    vec2 cell = floor(pixel / ss_spacing);
+    vec2 sampleUV = (cell + 0.5) * ss_spacing / ss_resolution;
+    vec4 source = ss_sample(sampleUV);
+    float coverage = min(source.a / max(alpha, 0.0001), 1.0);
+    float light = ss_luma(mix(center, ss_color(source), coverage));
+    float level = floor(clamp(light, 0.0, 1.0) * 3.0 + 0.5);
+    vec3 ink;
+    if (level < 0.5) ink = vec3(15.0, 56.0, 15.0) / 255.0;
+    else if (level < 1.5) ink = vec3(48.0, 98.0, 48.0) / 255.0;
+    else if (level < 2.5) ink = vec3(139.0, 172.0, 15.0) / 255.0;
+    else ink = vec3(155.0, 188.0, 15.0) / 255.0;
+    vec2 position = fract(pixel / ss_spacing);
+    vec2 grid = smoothstep(vec2(0.0), vec2(0.65 / ss_spacing), position);
+    return ink * (0.78 + 0.22 * grid.x * grid.y);
+}
+
+float ss_rain(vec2 pixel) {
+    float drops = 0.0;
+    for (int layer = 0; layer < 3; layer++) {
+        float depth = float(layer);
+        vec2 size = vec2(64.0 + depth * 23.0, 105.0 + depth * 37.0);
+        vec2 point = vec2(pixel.x + pixel.y * 0.18, pixel.y);
+        point += vec2(depth * 137.0, -ss_time * (190.0 + depth * 85.0));
+        vec2 cell = floor(point / size);
+        vec2 local = fract(point / size);
+        float seed = ss_random(cell + vec2(depth * 31.0, 19.0));
+        float centerX = 0.15 + seed * 0.7;
+        float head = 0.45 + 0.35 * ss_random(cell + vec2(7.0, depth));
+        float length = 0.18 + 0.22 * seed;
+        float streak = 1.0 - smoothstep(0.35, 1.15 + depth * 0.25,
+            abs(local.x - centerX) * size.x);
+        float tail = smoothstep(head - length, head, local.y)
+            * (1.0 - smoothstep(head, head + 0.025, local.y));
+        drops += streak * tail * (0.38 + depth * 0.14);
+    }
+    return clamp(drops, 0.0, 1.0);
+}
 `;
 
 export const FRAGMENT = `
@@ -170,16 +220,36 @@ if (ss_preset < 0.5) {
     // Blend appearance at the same warped coordinates to avoid double text at partial intensity.
     clean = ss_color(ss_sample(ss_crt_uv(uv)));
     color = ss_curved_crt(uv);
-} else {
+} else if (ss_preset < 7.5) {
     vec4 history = texture2D(cogl_sampler1, uv);
     float afterglow = max(history.r / max(history.a, 0.0001) - ss_luma(clean), 0.0);
     color = ss_terminal(uv, clean, vec3(0.35, 1.0, 0.50)) + vec3(0.20, 0.85, 0.36) * afterglow;
+} else if (ss_preset < 8.5) {
+    color = ss_lcd(uv, clean, original.a);
+} else if (ss_preset < 9.5) {
+    vec2 cell = floor(pixel / max(1.0, ss_spacing * 0.5));
+    float threshold = ss_bayer4(cell);
+    color = floor(clamp(clean, 0.0, 1.0) * 3.0 + threshold) / 3.0;
+} else if (ss_preset < 10.5) {
+    // Wave lengths and displacement use texture pixels so windows keep the same scale.
+    vec2 displacement = vec2(
+        sin(pixel.y / 38.0 + ss_time * 1.3) + 0.45 * sin((pixel.x + pixel.y) / 67.0 - ss_time),
+        cos(pixel.x / 46.0 - ss_time * 1.1) + 0.45 * sin((pixel.y - pixel.x) / 73.0 + ss_time * 0.8));
+    vec4 source = ss_sample(uv + displacement * (3.0 * ss_intensity) / ss_resolution);
+    float coverage = min(source.a / max(original.a, 0.0001), 1.0);
+    // Blend at displaced coordinates to avoid double text at partial intensity.
+    clean = mix(clean, ss_color(source), coverage);
+    color = clean;
+} else {
+    color = mix(clean, vec3(0.72, 0.85, 1.0), ss_rain(pixel));
 }
 
 vec3 result = clamp(mix(clean, color, ss_intensity), 0.0, 1.0);
 if (ss_monochrome > 0.5)
     result = vec3(ss_luma(result));
-result *= mix(1.0, original.a, ss_premultiplied);
+// Both effect backends composite premultiplied colors. Without this, LCD ink
+// and other added light leak from transparent pixels into a rectangular frame.
+result *= original.a;
 cogl_color_out = vec4(result, original.a) * cogl_color_in;
 `;
 
