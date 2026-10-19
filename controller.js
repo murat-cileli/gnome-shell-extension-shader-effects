@@ -150,14 +150,14 @@ export class ShaderController {
     }
 
     destroy() {
+        if (this._timer)
+            GLib.Source.remove(this._timer);
+        this._timer = 0;
         this._settings.disconnect(this._settingsId);
         this._interface.disconnect(this._animationsId);
         Main.sessionMode.disconnect(this._sessionId);
         if (this._motionId)
             this._stSettings.disconnect(this._motionId);
-        if (this._timer)
-            GLib.Source.remove(this._timer);
-        this._timer = 0;
         for (const actor of this._effects.keys())
             this._removeEffect(actor);
         for (const [actor, id] of this._selected)
