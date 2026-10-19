@@ -21,16 +21,24 @@ particularly `crt-geom` and `phosphor-trails`. The extension does not load Cg pr
 
 ## Install
 
-Requires Python 3 and `glib-compile-schemas` to build. Run from this directory:
+Requires Bash, Python 3, Node.js, `zip`, `glib-compile-schemas`, and
+`glslangValidator` to validate and build. Run from this directory:
 
 ```sh
-python3 tools/package.py
-gnome-extensions install --force dist/shader-effects@muratc.com.shell-extension.zip
+./build.sh
+./build.sh --install
 ```
 
 The ZIP in `dist/` can also be uploaded for review at
 [GNOME Extensions](https://extensions.gnome.org/upload/). It includes the schema
 XML; GNOME compiles it automatically during installation.
+
+The build creates `dist/shader-effects@muratc.com.zip`. Use `./build.sh --check`
+to validate without packaging, or `./build.sh --compare-zip /path/to/reference.zip`
+to compare every packaged file with an existing ZIP. `--install` always builds
+the current sources first. `npm run pack` and `python3 tools/package.py` use the
+same build script. The package retains this project's README and license and
+omits compiled schemas.
 
 Log out and back in after the first installation so GNOME Shell discovers the extension, then run:
 
@@ -106,7 +114,7 @@ Effects use offscreen textures. Large desktops and high resolution windows consu
 ## Validation
 
 ```sh
-python3 tools/check.py
+./build.sh --check
 python3 tools/test-shell.py
 python3 tests/check_renders.py
 python3 tools/test-shell.py retro.js
