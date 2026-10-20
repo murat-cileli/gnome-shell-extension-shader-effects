@@ -5,5 +5,5 @@
   "url": "https://github.com/murat-cileli/gnome-shell-extension-shader-effects",
   "shell-version": ["48", "49", "50", "51"],
   "settings-schema": "org.gnome.shell.extensions.shader-effects",
-  "version": 10
+  "version": 11
 }

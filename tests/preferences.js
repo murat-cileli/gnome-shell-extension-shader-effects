@@ -49,10 +49,19 @@ app.connect('activate', () => {
         assert(!monochrome.active, 'Monochrome switch must reflect external settings');
         combo.selected = PRESETS.findIndex(preset => preset.id === 'ntsc');
         assert(settings.get_string('preset') === 'ntsc', 'NTSC must be selectable');
-        for (const preset of PRESETS.filter(item => item.shader >= 6)) {
+        for (const preset of PRESETS.filter(item => item.shader >= 6 && !item.unavailableMessage)) {
             combo.selected = PRESETS.findIndex(item => item.id === preset.id);
             assert(settings.get_string('preset') === preset.id, `${preset.name} must be selectable`);
         }
+        const previousPreset = settings.get_string('preset');
+        combo.selected = PRESETS.findIndex(preset => preset.id === 'phosphor-trails');
+        assert(settings.get_string('preset') === previousPreset, 'Unavailable effect must not be saved');
+        assert(PRESETS[combo.selected].id === previousPreset, 'Unavailable selection must revert');
+        const warning = window.get_visible_dialog();
+        assert(warning instanceof Adw.AlertDialog, 'Unavailable effect must show a warning');
+        assert(warning.body === PRESETS.find(preset => preset.id === 'phosphor-trails').unavailableMessage,
+            'Warning must explain temporary unavailability and a future update');
+        warning.close();
         const spin = widgets.find(widget => widget instanceof Adw.SpinRow && widget.title === 'Intensity');
         spin.value = 0.7;
         assert(Math.abs(settings.get_double('intensity') - 0.7) < 0.001, 'Intensity must save settings');

@@ -28,7 +28,7 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
 
         const animation = new Adw.PreferencesGroup({
             title: 'Animation',
-            description: 'VHS, NTSC, both CRT presets, and Phosphor Trails respect the desktop’s reduced motion setting. Other effects are static.',
+            description: 'VHS, NTSC, and both CRT presets respect the desktop’s reduced motion setting. Other effects are static.',
         });
         page.add(animation);
         this._switch(animation, settings, 'animate', 'Animate effects', 'Disable to freeze the effect and stop continuous redraws.');
@@ -40,7 +40,7 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
         for (const [key, title, subtitle] of [
             ['toggle-shortcut', 'Toggle effects', 'Enable or disable the current effect.'],
             ['window-shortcut', 'Toggle focused window', 'Switch to Selected windows and add or remove the focused window.'],
-            ['cycle-shortcut', 'Next effect', 'Cycle through all shader presets.'],
+            ['cycle-shortcut', 'Next effect', 'Cycle through available shader presets.'],
         ]) {
             const row = new Adw.ActionRow({title, subtitle});
             const label = new Gtk.ShortcutLabel({valign: Gtk.Align.CENTER, disabled_text: 'Disabled'});
@@ -86,16 +86,34 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
     _combo(group, settings, signals, key, title, choices) {
         const row = new Adw.ComboRow({
             title,
-            model: Gtk.StringList.new(choices.map(choice => choice.name)),
+            model: Gtk.StringList.new(choices.map(choice => choice.unavailableMessage
+                ? `${choice.name} (temporarily unavailable)` : choice.name)),
             selected: choices.findIndex(choice => choice.id === settings.get_string(key)),
         });
-        row.connect('notify::selected', () => {
-            if (choices[row.selected])
-                settings.set_string(key, choices[row.selected].id);
-        });
-        signals.push(settings.connect(`changed::${key}`, () => {
+        let updating = false;
+        const syncSelection = () => {
+            updating = true;
             row.selected = choices.findIndex(choice => choice.id === settings.get_string(key));
-        }));
+            updating = false;
+        };
+        row.connect('notify::selected', () => {
+            if (updating)
+                return;
+            const choice = choices[row.selected];
+            if (choice?.unavailableMessage) {
+                syncSelection();
+                const dialog = new Adw.AlertDialog({
+                    heading: `${choice.name} is temporarily unavailable`,
+                    body: choice.unavailableMessage,
+                    close_response: 'ok',
+                });
+                dialog.add_response('ok', 'OK');
+                dialog.present(row.get_root());
+            } else if (choice) {
+                settings.set_string(key, choice.id);
+            }
+        });
+        signals.push(settings.connect(`changed::${key}`, syncSelection));
         group.add(row);
     }
 

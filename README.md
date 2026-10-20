@@ -13,7 +13,13 @@ Apply customizable GPU-powered shader effects to your GNOME desktop, including C
 | Scanlines | Static horizontal scanlines with adjustable spacing |
 | CRT | RGB phosphor mask, scanlines, vignette, and subtle animated flicker |
 | Curved CRT | Gently curved glass, rounded edges, RGB mask, glow, and scanlines |
-| Phosphor Trails | Green phosphor with real, exponentially fading trails behind bright moving content |
+| Phosphor Trails | Temporarily unavailable; selecting it shows a warning and does not activate it |
+
+**Phosphor Trails is temporarily disabled** following reports of an unresponsive desktop.
+It will be fixed in a future update. The panel and Preferences show a warning
+when it is selected, and the cycle shortcut skips it. If it was saved as the
+selected effect, this update turns effects off before creating any GPU effects.
+Choose another effect to continue.
 
 The additional CRT and phosphor effects are original GLSL implementations inspired by
 the display styles in [libretro/common-shaders](https://github.com/libretro/common-shaders),
@@ -48,7 +54,7 @@ Click the display icon in the top panel and switch on **Enable effects**. Choose
 - **Selected windows** processes only windows checked in **Selected windows**. You can select multiple windows, including windows on other workspaces. An empty selection applies no effects.
 
 Switch on **Monochrome** in the panel menu or Preferences to render the selected
-effect in grayscale. It works with all six effects, preserves the effect's
+effect in grayscale. It works with all available effects, preserves the effect's
 animation and settings, and remains enabled when you switch effects. Conversion
 is applied after intensity blending, so even low-intensity effects stay fully
 grayscale. Switch it off to restore color. The choice is saved automatically.
@@ -57,7 +63,7 @@ grayscale. Switch it off to restore color. The choice is saved automatically.
 | --- | --- |
 | Super+Alt+V | Toggle effects |
 | Super+Alt+W | Add or remove the focused window, switch to Selected windows, and enable effects |
-| Super+Alt+C | Cycle through the six presets |
+| Super+Alt+C | Cycle through the five available presets |
 
 Open **Preferences** for intensity, scanline spacing, animation speed, frame rate, and editable shortcuts. **Scanline spacing** controls the distance between lines in texture pixels; larger values produce a coarser pattern. A shortcut may conflict with another desktop action; change or disable it in Preferences. Effect settings and shortcuts are saved through GSettings.
 
@@ -78,13 +84,9 @@ gnome-extensions disable shader-effects@muratc.com
 
 ## Performance
 
-VHS, NTSC, both CRT presets, and Phosphor Trails animate at up to 30 updates per second by default, configurable from 10 to 60. Disable **Animate** to freeze them, including the stored phosphor history. GNOME's `enable-animations` and reduced motion settings also stop the animation timer. Scanlines does not schedule continuous redraws. Monochrome does not change animation scheduling. Hidden targets do not receive animation updates. NTSC samples thirteen neighboring positions per pixel and can be more demanding on large desktops.
+VHS, NTSC, and both CRT presets animate at up to 30 updates per second by default, configurable from 10 to 60. Disable **Animate** to freeze them. GNOME's `enable-animations` and reduced motion settings also stop the animation timer. Scanlines does not schedule continuous redraws. Monochrome does not change animation scheduling. Hidden targets do not receive animation updates. NTSC samples thirteen neighboring positions per pixel and can be more demanding on large desktops.
 
-Phosphor Trails maintains two additional GPU textures per target and updates
-their luminance with exponential decay. It reads no pixels back to JavaScript
-and writes no screen captures to disk. History is reset when the target is
-resized, the preset changes, or the effect is removed. A 3840×2160 target uses
-about 63 MiB of additional texture storage, excluding driver overhead.
+Phosphor Trails is temporarily disabled and does not allocate GPU history textures.
 
 Effects use offscreen textures. Large desktops and high resolution windows consume more GPU memory and bandwidth. While any effect is attached, the extension inhibits direct scanout so fullscreen applications also pass through the compositor. Disabling effects releases that inhibition. Other effects or extensions on the same actor can change the final result.
 
@@ -112,6 +114,7 @@ python3 tests/check_renders.py
 python3 tools/test-shell.py retro.js
 python3 tests/check_retro_renders.py
 python3 tools/test-shell.py lifecycle.js
+python3 tools/test-shell.py phosphor-disabled.js
 ```
 
 The Shell tests use a separate headless compositor, temporary XDG directories,

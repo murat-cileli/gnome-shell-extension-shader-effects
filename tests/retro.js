@@ -6,7 +6,7 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Scripting from 'resource:///org/gnome/shell/ui/scripting.js';
-import {PRESETS} from '../presets.js';
+import {AVAILABLE_PRESETS} from '../presets.js';
 
 export const METRICS = {};
 export function init() {
@@ -94,7 +94,7 @@ export async function run() {
     await Scripting.sleep(200);
     await capture('original');
     settings.set_boolean('enabled', true);
-    for (const {id} of PRESETS.filter(item => item.shader >= 6)) {
+    for (const {id} of AVAILABLE_PRESETS.filter(item => item.shader >= 6)) {
         settings.set_string('preset', id);
         for (const intensity of [0.55, 1]) {
             settings.set_double('intensity', intensity);
@@ -103,36 +103,8 @@ export async function run() {
         }
     }
 
-    // A white block moves over opaque black. Only temporal history can light its old position.
-    const field = new St.Widget({x: 100, y: 250, width: 500, height: 120, style: 'background-color: black;'});
-    const block = new St.Widget({x: 20, y: 20, width: 60, height: 60, style: 'background-color: white;'});
-    field.add_child(block);
-    Main.uiGroup.add_child(field);
-    settings.set_string('preset', 'phosphor-trails');
-    const effect = [...controller._effects.values()][0].effect;
-    effect.setTime(100);
-    await Scripting.sleep(150);
-    await capture('trails-before');
-    assert(effect._history, 'Phosphor must allocate GPU history');
-    block.x = 140;
-    effect.setTime(100 + 1 / 30);
-    await Scripting.sleep(120);
-    await capture('trails-after');
-    await Scripting.sleep(180);
-    await capture('trails-frozen');
-    effect.setTime(100.25);
-    await Scripting.sleep(120);
-    await capture('trails-decay');
-    effect.setTime(100.5);
-    await Scripting.sleep(120);
-    await capture('trails-decay-end');
-    settings.set_string('preset', 'crt');
-    assert(effect._history === null, 'Switching presets must release history');
-    settings.set_string('preset', 'phosphor-trails');
-    await Scripting.sleep(120);
     settings.set_boolean('enabled', false);
-    assert(effect._history === null, 'Disabling must release history');
-    field.destroy();
+    assert(controller._effects.size === 0, 'Disabling must release effects');
     fixture.destroy();
-    print('Retro render, temporal history, frozen history, and resource cleanup checks passed.');
+    print('Curved CRT render and resource cleanup checks passed.');
 }

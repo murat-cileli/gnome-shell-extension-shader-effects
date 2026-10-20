@@ -39,15 +39,13 @@ export async function run() {
         });
 
         extension.settings.set_string('scope', 'screen');
-        extension.settings.set_string('preset', ['vhs', 'phosphor-trails', 'curved-crt'][cycle]);
+        extension.settings.set_string('preset', ['vhs', 'ntsc', 'curved-crt'][cycle]);
         extension.settings.set_boolean('animate', true);
         extension.settings.set_boolean('enabled', true);
         await Scripting.sleep(100);
         assert(controller._effects.size === 1, 'Desktop effect must be active');
         assert(controller._timer !== 0, 'Animation must be active');
         const effects = [...controller._effects.values()].map(entry => entry.effect);
-        if (cycle === 1)
-            assert(effects[0]._history, 'Phosphor cycle must allocate history before disable');
         menu.open();
         indicator._presetMenu.menu.open();
         await Scripting.sleep(100);

@@ -5,7 +5,7 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Scripting from 'resource:///org/gnome/shell/ui/scripting.js';
-import {PRESETS} from '../presets.js';
+import {AVAILABLE_PRESETS} from '../presets.js';
 
 export const METRICS = {};
 
@@ -68,7 +68,7 @@ export async function run() {
     settings.set_boolean('monochrome', false);
     settings.set_double('intensity', 0.8);
     settings.set_boolean('enabled', true);
-    for (const {id: preset} of PRESETS) {
+    for (const {id: preset} of AVAILABLE_PRESETS) {
         settings.set_string('preset', preset);
         if (preset.startsWith('vhs'))
             for (const {effect} of controller._effects.values())
@@ -140,7 +140,7 @@ export async function run() {
     settings.set_boolean('monochrome', false);
     await Scripting.sleep(250);
     await capture('selected-ntsc-windows');
-    for (const {id: preset} of PRESETS.filter(item => item.shader >= 6)) {
+    for (const {id: preset} of AVAILABLE_PRESETS.filter(item => item.shader >= 6)) {
         settings.set_string('preset', preset);
         await Scripting.sleep(150);
         await capture(`selected-${preset}`);
@@ -165,7 +165,7 @@ export async function run() {
     assert(controller._timer !== 0, 'NTSC must animate');
     settings.set_string('preset', 'scanlines');
     assert(controller._timer === 0, 'Scanlines must be static');
-    for (const preset of PRESETS.filter(item => item.shader >= 6)) {
+    for (const preset of AVAILABLE_PRESETS.filter(item => item.shader >= 6)) {
         settings.set_string('preset', preset.id);
         assert(Boolean(controller._timer) === preset.animated, `${preset.id}: animation scheduling`);
         await Scripting.sleep(100);

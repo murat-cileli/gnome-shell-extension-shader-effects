@@ -17,6 +17,7 @@ export class ShaderController {
         this._timer = 0;
         this._time = 0;
         this._unredirectDisabled = false;
+        this._blockedPreset = null;
         this._interface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
         this._stSettings = St.Settings.get();
         this._settingsId = settings.connect('changed', () => this.sync());
@@ -73,7 +74,14 @@ export class ShaderController {
     }
 
     sync() {
-        const active = this._settings.get_boolean('enabled') &&
+        const preset = PRESETS.find(item => item.id === this._settings.get_string('preset'));
+        const enabled = this._settings.get_boolean('enabled');
+        const warn = preset.unavailableMessage && (this._blockedPreset !== preset.id || enabled);
+        this._blockedPreset = preset.unavailableMessage ? preset.id : null;
+        // Guard before creating/configuring any GPU effects, including saved settings at startup.
+        if (preset.unavailableMessage && enabled)
+            this._settings.set_boolean('enabled', false);
+        const active = !preset.unavailableMessage && this._settings.get_boolean('enabled') &&
             this._settings.get_double('intensity') > 0 &&
             !Main.sessionMode.isLocked && !Main.sessionMode.isGreeter;
         const targets = new Set();
@@ -111,6 +119,8 @@ export class ShaderController {
             this._unredirectDisabled = needsCompositing;
         }
         this._syncAnimation();
+        if (warn)
+            Main.notify(`${preset.name} is temporarily unavailable`, preset.unavailableMessage);
     }
 
     _removeEffect(actor) {

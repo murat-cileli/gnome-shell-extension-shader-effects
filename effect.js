@@ -23,11 +23,20 @@ class ShaderEffectsEffect extends EffectBase {
 
     configure(settings) {
         const preset = settings.get_string('preset');
+        const definition = PRESETS.find(item => item.id === preset);
+        // Defense in depth: never initialize the quarantined feedback renderer.
+        if (definition.unavailableMessage) {
+            this.set_enabled(false);
+            this.releaseResources();
+            this._preset = null;
+            return;
+        }
+        this.set_enabled(true);
         if (preset !== this._preset)
             this.releaseResources();
         this._preset = preset;
         this._set('intensity', [settings.get_double('intensity')]);
-        this._set('preset', [PRESETS.find(preset => preset.id === settings.get_string('preset')).shader]);
+        this._set('preset', [definition.shader]);
         this._set('spacing', [settings.get_double('scanline-spacing')]);
         this._set('monochrome', [settings.get_boolean('monochrome') ? 1 : 0]);
         this.queue_repaint();
