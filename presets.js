@@ -4,13 +4,7 @@ export const PRESETS = Object.freeze([
     {id: 'scanlines', name: 'Scanlines', shader: 1, animated: false},
     {id: 'crt', name: 'CRT', shader: 2, animated: true},
     {id: 'curved-crt', name: 'Curved CRT', shader: 6, animated: true},
-    {
-        id: 'phosphor-trails', name: 'Phosphor Trails', shader: 7, animated: true,
-        unavailableMessage: 'It will be fixed in a future update. Please choose another effect.',
-    },
 ]);
-
-export const AVAILABLE_PRESETS = Object.freeze(PRESETS.filter(preset => !preset.unavailableMessage));
 
 export const SCOPES = Object.freeze([
     {id: 'screen', name: 'Entire desktop'},

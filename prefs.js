@@ -86,8 +86,7 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
     _combo(group, settings, signals, key, title, choices) {
         const row = new Adw.ComboRow({
             title,
-            model: Gtk.StringList.new(choices.map(choice => choice.unavailableMessage
-                ? `${choice.name} (temporarily unavailable)` : choice.name)),
+            model: Gtk.StringList.new(choices.map(choice => choice.name)),
             selected: choices.findIndex(choice => choice.id === settings.get_string(key)),
         });
         let updating = false;
@@ -100,18 +99,8 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
             if (updating)
                 return;
             const choice = choices[row.selected];
-            if (choice?.unavailableMessage) {
-                syncSelection();
-                const dialog = new Adw.AlertDialog({
-                    heading: `${choice.name} is temporarily unavailable`,
-                    body: choice.unavailableMessage,
-                    close_response: 'ok',
-                });
-                dialog.add_response('ok', 'OK');
-                dialog.present(row.get_root());
-            } else if (choice) {
+            if (choice)
                 settings.set_string(key, choice.id);
-            }
         });
         signals.push(settings.connect(`changed::${key}`, syncSelection));
         group.add(row);

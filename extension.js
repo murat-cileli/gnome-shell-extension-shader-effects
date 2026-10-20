@@ -12,7 +12,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {Slider} from 'resource:///org/gnome/shell/ui/slider.js';
 
 import {ShaderController} from './controller.js';
-import {AVAILABLE_PRESETS, PRESETS, SCOPES} from './presets.js';
+import {PRESETS, SCOPES} from './presets.js';
 
 const ShaderIndicator = GObject.registerClass(
 class ShaderEffectsIndicator extends PanelMenu.Button {
@@ -30,14 +30,8 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         this._presetMenu = new PopupMenu.PopupSubMenuMenuItem('Effect');
         this._presetItems = new Map();
         for (const preset of PRESETS) {
-            const item = new PopupMenu.PopupMenuItem(
-                preset.unavailableMessage ? `${preset.name} (temporarily unavailable)` : preset.name);
-            item.connect('activate', () => {
-                if (preset.unavailableMessage)
-                    Main.notify(`${preset.name} is temporarily unavailable`, preset.unavailableMessage);
-                else
-                    this._settings.set_string('preset', preset.id);
-            });
+            const item = new PopupMenu.PopupMenuItem(preset.name);
+            item.connect('activate', () => this._settings.set_string('preset', preset.id));
             this._presetMenu.menu.addMenuItem(item);
             this._presetItems.set(preset.id, item);
         }
@@ -154,7 +148,7 @@ class ShaderEffectsIndicator extends PanelMenu.Button {
         this._enabled.setToggleState(enabled);
         this._monochrome.setToggleState(this._settings.get_boolean('monochrome'));
         this._animate.setToggleState(this._settings.get_boolean('animate'));
-        this._animate.setSensitive(preset.animated && !preset.unavailableMessage);
+        this._animate.setSensitive(preset.animated);
         this._presetMenu.label.text = `Effect: ${preset.name}`;
         this._scopeMenu.label.text = `Apply to: ${scope.name}`;
         this._windowMenu.label.text = `Selected windows (${this._extension.controller.selectedCount})`;
@@ -191,8 +185,8 @@ export default class ShaderEffectsExtension extends Extension {
             this.settings.set_boolean('enabled', true);
         });
         this._addBinding('cycle-shortcut', () => {
-            const index = AVAILABLE_PRESETS.findIndex(item => item.id === this.settings.get_string('preset'));
-            this.settings.set_string('preset', AVAILABLE_PRESETS[(index + 1) % AVAILABLE_PRESETS.length].id);
+            const index = PRESETS.findIndex(item => item.id === this.settings.get_string('preset'));
+            this.settings.set_string('preset', PRESETS[(index + 1) % PRESETS.length].id);
         });
     }
 

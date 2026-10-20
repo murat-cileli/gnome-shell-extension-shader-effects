@@ -39,22 +39,20 @@ with tempfile.TemporaryDirectory(prefix='shader-effects-check-') as directory:
         "import * as shader from './shaderSource.js'; process.stdout.write(JSON.stringify(shader));",
     ], cwd=ROOT, text=True)
     shader = json.loads(source)
-    for name in ['', 'HISTORY_']:
-        for version in ['120', '100']:
-            fragment = target / f'{name}shader-{version}.frag'
-            fragment.write_text(
-                f'#version {version}\n'
-                + ('precision highp float;\n' if version == '100' else '')
-                + 'uniform sampler2D cogl_sampler0;\n'
-                + 'uniform sampler2D cogl_sampler1;\n'
-                + 'varying vec4 cogl_tex_coord_in[1];\n'
-                + 'varying vec4 cogl_color_in;\n'
-                + '#define cogl_color_out gl_FragColor\n'
-                + shader[f'{name}DECLARATIONS']
-                + '\nvoid main() {\n'
-                + shader[f'{name}FRAGMENT']
-                + '\n}\n'
-            )
-            run('glslangValidator', '-S', 'frag', str(fragment))
+    for version in ['120', '100']:
+        fragment = target / f'shader-{version}.frag'
+        fragment.write_text(
+            f'#version {version}\n'
+            + ('precision highp float;\n' if version == '100' else '')
+            + 'uniform sampler2D cogl_sampler0;\n'
+            + 'varying vec4 cogl_tex_coord_in[1];\n'
+            + 'varying vec4 cogl_color_in;\n'
+            + '#define cogl_color_out gl_FragColor\n'
+            + shader['DECLARATIONS']
+            + '\nvoid main() {\n'
+            + shader['FRAGMENT']
+            + '\n}\n'
+        )
+        run('glslangValidator', '-S', 'frag', str(fragment))
 
 print('JavaScript syntax, metadata, GSettings schema, desktop GLSL, and GLES GLSL checks passed.')

@@ -50,12 +50,6 @@ float ss_glow(vec2 uv, vec3 center) {
     return max(surrounding * 0.25 - ss_luma(center), 0.0);
 }
 
-vec3 ss_terminal(vec2 uv, vec3 center, vec3 phosphor) {
-    float light = pow(max(ss_luma(center), 0.0), 0.88);
-    float lines = 0.96 + 0.04 * cos(uv.y * ss_resolution.y * 6.2831853 / ss_spacing);
-    return phosphor * (light * lines + 0.20 * ss_glow(uv, center));
-}
-
 vec2 ss_crt_uv(vec2 uv) {
     vec2 point = uv * 2.0 - 1.0;
     return point * (1.0 + 0.028 * ss_intensity * point.yx * point.yx) * 0.5 + 0.5;
@@ -170,10 +164,6 @@ if (ss_preset < 0.5) {
     // Blend appearance at the same warped coordinates to avoid double text at partial intensity.
     clean = ss_color(ss_sample(ss_crt_uv(uv)));
     color = ss_curved_crt(uv);
-} else {
-    vec4 history = texture2D(cogl_sampler1, uv);
-    float afterglow = max(history.r / max(history.a, 0.0001) - ss_luma(clean), 0.0);
-    color = ss_terminal(uv, clean, vec3(0.35, 1.0, 0.50)) + vec3(0.20, 0.85, 0.36) * afterglow;
 }
 
 vec3 result = clamp(mix(clean, color, ss_intensity), 0.0, 1.0);
@@ -181,17 +171,4 @@ if (ss_monochrome > 0.5)
     result = vec3(ss_luma(result));
 result *= mix(1.0, original.a, ss_premultiplied);
 cogl_color_out = vec4(result, original.a) * cogl_color_in;
-`;
-
-// GPU feedback stores premultiplied luminance, with the current frame's coverage.
-// No screen pixels are read back to JavaScript or persisted to disk.
-export const HISTORY_DECLARATIONS = `uniform float ss_decay;`;
-export const HISTORY_FRAGMENT = `
-vec2 uv = cogl_tex_coord_in[0].xy;
-vec4 source = texture2D(cogl_sampler0, uv);
-vec4 previous = texture2D(cogl_sampler1, uv);
-float light = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
-float coverage = min(source.a / max(previous.a, 0.0001), 1.0);
-float glow = max(light, previous.r * ss_decay * coverage);
-cogl_color_out = vec4(vec3(glow), source.a);
 `;

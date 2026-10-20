@@ -11,7 +11,7 @@
       <summary>Apply effects to the desktop or selected windows</summary>
     </key>
     <key name="preset" type="s">
-      <choices><choice value="vhs"/><choice value="ntsc"/><choice value="scanlines"/><choice value="crt"/><choice value="curved-crt"/><choice value="phosphor-trails"/></choices>
+      <choices><choice value="vhs"/><choice value="ntsc"/><choice value="scanlines"/><choice value="crt"/><choice value="curved-crt"/></choices>
       <default>'vhs'</default>
       <summary>Shader preset</summary>
     </key>
@@ -26,7 +26,7 @@
     </key>
     <key name="animate" type="b">
       <default>true</default>
-      <summary>Animate VHS, NTSC, CRT, and phosphor trails effects</summary>
+      <summary>Animate VHS, NTSC, and CRT effects</summary>
     </key>
     <key name="speed" type="d">
       <range min="0.1" max="3.0"/>

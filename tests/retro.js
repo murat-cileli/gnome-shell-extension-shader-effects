@@ -6,7 +6,7 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Scripting from 'resource:///org/gnome/shell/ui/scripting.js';
-import {AVAILABLE_PRESETS} from '../presets.js';
+import {PRESETS} from '../presets.js';
 
 export const METRICS = {};
 export function init() {
@@ -94,7 +94,7 @@ export async function run() {
     await Scripting.sleep(200);
     await capture('original');
     settings.set_boolean('enabled', true);
-    for (const {id} of AVAILABLE_PRESETS.filter(item => item.shader >= 6)) {
+    for (const {id} of PRESETS.filter(item => item.shader >= 6)) {
         settings.set_string('preset', id);
         for (const intensity of [0.55, 1]) {
             settings.set_double('intensity', intensity);
