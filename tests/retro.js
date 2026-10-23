@@ -94,7 +94,7 @@ export async function run() {
     await Scripting.sleep(200);
     await capture('original');
     settings.set_boolean('enabled', true);
-    for (const {id} of PRESETS.filter(item => item.shader >= 6)) {
+    for (const {id} of PRESETS.filter(item => item.id === 'crt' || item.shader >= 6)) {
         settings.set_string('preset', id);
         for (const intensity of [0.55, 1]) {
             settings.set_double('intensity', intensity);
@@ -106,5 +106,5 @@ export async function run() {
     settings.set_boolean('enabled', false);
     assert(controller._effects.size === 0, 'Disabling must release effects');
     fixture.destroy();
-    print('Curved CRT render and resource cleanup checks passed.');
+    print('CRT variants render and resource cleanup checks passed.');
 }

@@ -144,7 +144,7 @@ if (ss_preset < 0.5) {
     color += headNoise * grain * mix(0.35, 0.55, boost);
 } else if (ss_preset < 1.5) {
     color *= 0.60 + 0.40 * line;
-} else if (ss_preset < 2.5) {
+} else if (ss_preset < 2.5 || ss_preset > 6.5) {
     vec2 centered = uv * 2.0 - 1.0;
     float vignette = 1.0 - 0.22 * dot(centered, centered);
     float column = mod(floor(pixel.x), 3.0);
@@ -158,6 +158,8 @@ if (ss_preset < 0.5) {
     color = pow(max(color, vec3(0.0)), vec3(0.93));
     color *= mask * ss_scanline(uv.y) * max(vignette, 0.0);
     color *= 1.0 + 0.012 * sin(ss_time * 47.0);
+    if (ss_preset > 6.5)
+        color = ss_luma(color) * (ss_preset < 7.5 ? vec3(0.18, 1.0, 0.32) : vec3(1.0, 0.65, 0.12));
 } else if (ss_preset < 5.5) {
     color = ss_ntsc(uv, clean, original.a) * ss_scanline(uv.y);
 } else if (ss_preset < 6.5) {

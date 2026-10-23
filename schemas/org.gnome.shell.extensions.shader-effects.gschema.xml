@@ -11,7 +11,7 @@
       <summary>Apply effects to the desktop or selected windows</summary>
     </key>
     <key name="preset" type="s">
-      <choices><choice value="vhs"/><choice value="ntsc"/><choice value="scanlines"/><choice value="crt"/><choice value="curved-crt"/></choices>
+      <choices><choice value="vhs"/><choice value="ntsc"/><choice value="scanlines"/><choice value="crt"/><choice value="green-crt"/><choice value="amber-crt"/><choice value="curved-crt"/></choices>
       <default>'vhs'</default>
       <summary>Shader preset</summary>
     </key>

@@ -38,7 +38,8 @@ app.connect('activate', () => {
         const combo = widgets.find(widget => widget instanceof Adw.ComboRow && widget.title === 'Effect');
         combo.selected = PRESETS.findIndex(preset => preset.id === 'crt');
         assert(settings.get_string('preset') === 'crt', 'Preset row must save settings');
-        assert(combo.model.get_string(combo.selected + 1) === 'Curved CRT', 'Curved CRT must follow CRT');
+        for (const [offset, name] of ['CRT (Curved)', 'CRT (Green)', 'CRT (Amber)'].entries())
+            assert(combo.model.get_string(combo.selected + offset + 1) === name, `${name} must follow CRT`);
         settings.set_string('preset', 'scanlines');
         assert(combo.selected === PRESETS.findIndex(preset => preset.id === 'scanlines'), 'Preset row must reflect external settings');
         const monochrome = widgets.find(widget => widget instanceof Adw.SwitchRow && widget.title === 'Monochrome');
@@ -53,7 +54,7 @@ app.connect('activate', () => {
             combo.selected = PRESETS.findIndex(item => item.id === preset.id);
             assert(settings.get_string('preset') === preset.id, `${preset.name} must be selectable`);
         }
-        assert(combo.model.get_n_items() === 5, 'Preferences must offer exactly five effects');
+        assert(combo.model.get_n_items() === 7, 'Preferences must offer exactly seven effects');
         const spin = widgets.find(widget => widget instanceof Adw.SpinRow && widget.title === 'Intensity');
         spin.value = 0.7;
         assert(Math.abs(settings.get_double('intensity') - 0.7) < 0.001, 'Intensity must save settings');

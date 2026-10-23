@@ -48,8 +48,8 @@ export async function run() {
     assert(extension?.controller, 'Extension must enable with a removed saved preset');
     assert(extension.settings.get_string('preset') === 'vhs',
         'Removed saved preset must fall back to the schema default');
-    assert(extension._indicator._presetItems.size === 5, 'Panel must offer five effects');
-    assert(PRESETS.length === 5, 'Exactly five presets must remain');
+    assert(extension._indicator._presetItems.size === 7, 'Panel must offer seven effects');
+    assert(PRESETS.length === 7, 'Exactly seven presets must be available');
 
     await Main.extensionManager.disableExtension(UUID);
     await Scripting.sleep(200);
@@ -72,8 +72,8 @@ export async function run() {
             visited.add(extension.settings.get_string('preset'));
             assert(extension.controller._effects.size === 1, 'Cycling must retain the effect');
         }
-        assert(visited.size === 5 && extension.settings.get_string('preset') === first,
-            'Shortcut must cycle through all five effects and return to the first');
+        assert(visited.size === 7 && extension.settings.get_string('preset') === first,
+            'Shortcut must cycle through all seven effects and return to the first');
     } finally {
         Main.wm.addKeybinding = originalAddKeybinding;
         await Main.extensionManager.disableExtension(UUID);

@@ -16,7 +16,9 @@ Give your GNOME desktop a retro look with VHS distortion, CRT displays, and scan
 | NTSC | Soft colors, color bleed, and composite video artifacts |
 | Scanlines | Classic horizontal scanlines |
 | CRT | RGB phosphor pattern, scanlines, and subtle flicker |
-| Curved CRT | Curved glass, rounded edges, glow, and scanlines |
+| CRT (Curved) | Curved glass, rounded edges, glow, and scanlines |
+| CRT (Green) | Green phosphor tones with CRT scanlines, vignette, and flicker |
+| CRT (Amber) | Amber phosphor tones with CRT scanlines, vignette, and flicker |
 
 Add **Monochrome** to any effect for a black-and-white look. Adjust intensity and animation from the panel menu, or open **Preferences** for more options and custom shortcuts.
 
@@ -64,7 +66,7 @@ Change or disable shortcuts in **Preferences** if they conflict with other deskt
 ### Tips
 
 - Start with the default 55% intensity and increase it for a stronger retro look.
-- Curved CRT bends the image while click targets stay in place. Use a lower intensity for easier interaction.
+- CRT (Curved) bends the image while click targets stay in place. Use a lower intensity for easier interaction.
 - For lower GPU usage on large or high-resolution desktops, reduce the animation frame rate in **Preferences** or turn off **Animate**.
 
 ## License

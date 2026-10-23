@@ -31,6 +31,7 @@ for point in [(550, 300), (850, 300), (1040, 300),
 # Compare line contrast on a flat red field, away from texture transitions.
 contrasts = {}
 for name, image in [('ntsc', phase_zero), ('crt', load('scanline-crt')),
+                    ('green-crt', load('scanline-green-crt')), ('amber-crt', load('scanline-amber-crt')),
                     ('curved-crt', load('scanline-curved-crt'))]:
     rows = [image.getpixel((550, y))[0] for y in range(280, 296)]
     contrast = (max(rows) - min(rows)) / max(rows)
@@ -58,7 +59,7 @@ assert max(darkening) - min(darkening) <= 2, 'Scanlines over translucent white m
 for region in [(650, 80, 700, 500), (80, 540, 1180, 640)]:
     assert delta(baseline.crop(region), selected.crop(region)) == 0, 'Unselected content must stay unchanged'
 
-presets = ['vhs', 'ntsc', 'scanlines', 'crt', 'curved-crt']
+presets = ['vhs', 'ntsc', 'scanlines', 'crt', 'green-crt', 'amber-crt', 'curved-crt']
 for preset in presets:
     for suffix in ['monochrome', 'monochrome-low-intensity']:
         red, green, blue = load(f'desktop-{preset}-{suffix}').split()

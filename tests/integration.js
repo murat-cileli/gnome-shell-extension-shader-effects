@@ -111,7 +111,7 @@ export async function run() {
         await Scripting.sleep(250);
         await capture(`ntsc-phase-${phase}`);
     }
-    for (const preset of ['crt', 'curved-crt']) {
+    for (const preset of ['crt', 'green-crt', 'amber-crt', 'curved-crt']) {
         settings.set_string('preset', preset);
         await Scripting.sleep(200);
         await capture(`scanline-${preset}`);
