@@ -59,7 +59,8 @@ assert max(darkening) - min(darkening) <= 2, 'Scanlines over translucent white m
 for region in [(650, 80, 700, 500), (80, 540, 1180, 640)]:
     assert delta(baseline.crop(region), selected.crop(region)) == 0, 'Unselected content must stay unchanged'
 
-presets = ['vhs', 'ntsc', 'scanlines', 'crt', 'green-crt', 'amber-crt', 'curved-crt']
+presets = ['vhs', 'ntsc', 'scanlines', 'crt', 'green-crt', 'amber-crt', 'curved-crt',
+           'technicolor']
 for preset in presets:
     for suffix in ['monochrome', 'monochrome-low-intensity']:
         red, green, blue = load(f'desktop-{preset}-{suffix}').split()

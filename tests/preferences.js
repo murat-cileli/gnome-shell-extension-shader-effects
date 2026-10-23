@@ -54,7 +54,7 @@ app.connect('activate', () => {
             combo.selected = PRESETS.findIndex(item => item.id === preset.id);
             assert(settings.get_string('preset') === preset.id, `${preset.name} must be selectable`);
         }
-        assert(combo.model.get_n_items() === 7, 'Preferences must offer exactly seven effects');
+        assert(combo.model.get_n_items() === PRESETS.length, 'Preferences must offer every effect');
         const spin = widgets.find(widget => widget instanceof Adw.SpinRow && widget.title === 'Intensity');
         spin.value = 0.7;
         assert(Math.abs(settings.get_double('intensity') - 0.7) < 0.001, 'Intensity must save settings');

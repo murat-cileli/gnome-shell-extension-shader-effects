@@ -6,6 +6,7 @@ export const PRESETS = Object.freeze([
     {id: 'curved-crt', name: 'CRT (Curved)', shader: 6, animated: true},
     {id: 'green-crt', name: 'CRT (Green)', shader: 7, animated: true},
     {id: 'amber-crt', name: 'CRT (Amber)', shader: 8, animated: true},
+    {id: 'technicolor', name: 'Technicolor', shader: 10, animated: true},
 ]);
 
 export const SCOPES = Object.freeze([

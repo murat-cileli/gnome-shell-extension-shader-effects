@@ -1,3 +1,4 @@
+// Adapted shader credits and licenses are bundled in THIRD_PARTY_NOTICES.md.
 export const DECLARATIONS = `
 uniform vec2 ss_resolution;
 uniform float ss_time;
@@ -111,6 +112,32 @@ vec3 ss_ntsc(vec2 uv, vec3 center, float alpha) {
     }
     return ss_yiq_to_rgb(decoded);
 }
+
+// hunterk's public-domain film_noise: two-strip color, deconvergence, grain,
+// vignette, hotspot and gate weave. Procedural scratches replace its noise LUT.
+vec3 ss_technicolor(vec2 uv) {
+    float frame = mod(floor(ss_time * 24.0), 4268.0);
+    float weave = (ss_random(vec2(frame, 19.0)) - 0.5) * 1.8;
+    vec2 shift = vec2(0.0, weave) * ss_intensity;
+    vec3 red = ss_color(ss_sample(uv + (shift + vec2(1.2, 0.7)) / ss_resolution));
+    vec3 green = ss_color(ss_sample(uv + (shift + vec2(-0.6, -0.8)) / ss_resolution));
+    vec3 blue = ss_color(ss_sample(uv + (shift + vec2(-1.1, 0.9)) / ss_resolution));
+    vec3 film = vec3(red.r, green.g, blue.b);
+    float cyan = (film.g + film.b * 0.7) * 0.5;
+    film = mix(film, vec3(film.r, cyan, cyan * 0.7), 0.5);
+    float grain = ss_random(floor(uv * ss_resolution) + vec2(frame, frame * 0.73)) - 0.5;
+    film += grain * 0.12;
+    float vignette = smoothstep(0.0, 0.85, length(uv - 0.5) / 1.25);
+    float flicker = 1.0 + 0.06 * (ss_random(vec2(frame, 73.0)) - 0.5);
+    film *= (1.0 - vignette) * flicker;
+    film += (1.0 - vignette) * 0.035;
+    float scratchFrame = floor(frame / 3.0);
+    float scratchX = ss_random(vec2(scratchFrame, 41.0));
+    float scratch = 1.0 - smoothstep(0.4, 1.1, abs(uv.x - scratchX) * ss_resolution.x);
+    film += scratch * 0.22 * step(0.88, ss_random(vec2(scratchFrame, 63.0)));
+    return film;
+}
+
 `;
 
 export const FRAGMENT = `
@@ -144,7 +171,7 @@ if (ss_preset < 0.5) {
     color += headNoise * grain * mix(0.35, 0.55, boost);
 } else if (ss_preset < 1.5) {
     color *= 0.60 + 0.40 * line;
-} else if (ss_preset < 2.5 || ss_preset > 6.5) {
+} else if (ss_preset < 2.5 || (ss_preset > 6.5 && ss_preset < 8.5)) {
     vec2 centered = uv * 2.0 - 1.0;
     float vignette = 1.0 - 0.22 * dot(centered, centered);
     float column = mod(floor(pixel.x), 3.0);
@@ -166,6 +193,8 @@ if (ss_preset < 0.5) {
     // Blend appearance at the same warped coordinates to avoid double text at partial intensity.
     clean = ss_color(ss_sample(ss_crt_uv(uv)));
     color = ss_curved_crt(uv);
+} else {
+    color = ss_technicolor(uv);
 }
 
 vec3 result = clamp(mix(clean, color, ss_intensity), 0.0, 1.0);

@@ -28,7 +28,7 @@ export default class ShaderEffectsPreferences extends ExtensionPreferences {
 
         const animation = new Adw.PreferencesGroup({
             title: 'Animation',
-            description: 'VHS, NTSC, and all CRT presets respect the desktop’s reduced motion setting. Other effects are static.',
+            description: 'Animated effects respect the desktop’s reduced motion setting.',
         });
         page.add(animation);
         this._switch(animation, settings, 'animate', 'Animate effects', 'Disable to freeze the effect and stop continuous redraws.');

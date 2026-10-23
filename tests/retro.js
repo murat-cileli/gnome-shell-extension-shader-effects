@@ -101,6 +101,23 @@ export async function run() {
             await Scripting.sleep(120);
             await capture(`${id}-${intensity}`);
         }
+        if (id === 'technicolor') {
+            // Drive the shader clock directly so captures do not depend on timing.
+            for (const [phase, time] of [['phase-0', 0], ['phase-1', 1 / 24], ['frozen', 1 / 24]]) {
+                for (const {effect} of controller._effects.values())
+                    effect.setTime(time);
+                await Scripting.sleep(120);
+                await capture(`${id}-${phase}`);
+            }
+            settings.set_double('intensity', 0);
+            assert(controller._effects.size === 0 && controller._timer === 0,
+                `${id}: zero intensity must release resources`);
+            await Scripting.sleep(120);
+            await capture(`${id}-zero`);
+            settings.set_double('intensity', 1);
+            for (const {effect} of controller._effects.values())
+                effect.setTime(0);
+        }
     }
 
     settings.set_boolean('enabled', false);
