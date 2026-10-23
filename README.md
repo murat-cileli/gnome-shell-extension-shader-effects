@@ -68,8 +68,6 @@ Change or disable shortcuts in **Preferences** if they conflict with other deskt
 - CRT (Curved) bends the image while click targets stay in place. Use a lower intensity for easier interaction.
 - For lower GPU usage on large or high-resolution desktops, reduce the animation frame rate in **Preferences** or turn off **Animate**.
 
-Technicolor adapts [libretro/slang-shaders](https://github.com/libretro/slang-shaders) to GNOME's single-pass desktop rendering, using procedural grain and scratches in place of the upstream image textures and color LUT.
-
 ## License
 
 Licensed under [GPL-2.0-or-later](LICENSE).
