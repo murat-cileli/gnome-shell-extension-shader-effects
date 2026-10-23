@@ -6,6 +6,8 @@ Give your GNOME desktop a retro look with VHS distortion, CRT displays, and scan
 
 [Install from GNOME Extensions](https://extensions.gnome.org/extension/11353/shader-effects/)
 
+Tested on GNOME 48 (Wayland, X11) and GNOME 51 (Wayland).
+
 ## Effects
 
 | Effect | Look |
